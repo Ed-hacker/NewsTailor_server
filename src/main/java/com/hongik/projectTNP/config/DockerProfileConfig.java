@@ -22,16 +22,18 @@ public class DockerProfileConfig {
 
     @Bean
     @Profile("docker")
-    public void logDockerProfileActivated() {
+    public String logDockerProfileActivated() {
         System.out.println("Docker 프로필이 활성화되었습니다.");
         System.out.println("데이터베이스 URL: " + datasourceUrl);
         System.out.println("외부 API 연결 구성이 로드되었습니다.");
+        return "Docker Profile Activated";
     }
 
     @Bean
     @Profile("local")
-    public void logLocalProfileActivated() {
+    public String logLocalProfileActivated() {
         System.out.println("로컬 개발 프로필이 활성화되었습니다.");
         System.out.println("데이터베이스 URL: " + datasourceUrl);
+        return "Local Profile Activated";
     }
 } 
