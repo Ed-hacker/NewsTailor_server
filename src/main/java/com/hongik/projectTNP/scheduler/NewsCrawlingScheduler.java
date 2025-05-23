@@ -28,9 +28,6 @@ public class NewsCrawlingScheduler {
     
     @Value("${news.api.key}")
     private String apiKey;
-    
-    @Value("${news.api.url}")
-    private String apiUrl;
 
     @Autowired
     public NewsCrawlingScheduler(NewsService newsService) {
@@ -46,29 +43,47 @@ public class NewsCrawlingScheduler {
         logger.info("뉴스 크롤링 작업 시작: {}", LocalDateTime.now());
         
         try {
-            String url = apiUrl + "?apiKey=" + apiKey + "&country=kr&category=technology";
+            // 검색어를 추가하고 카테고리 제한을 제거
+            String url = "https://newsapi.org/v2/everything?apiKey=" + apiKey + "&q=technology OR AI OR software&language=en&sortBy=publishedAt&pageSize=10";
+            logger.info("API 요청 URL (키 제외): {}", url.replace(apiKey, "API_KEY"));
+            
             Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+            logger.info("API 응답 상태: {}", response != null ? response.get("status") : "응답 없음");
+            logger.info("전체 API 응답: {}", response);
             
             if (response != null && "ok".equals(response.get("status"))) {
                 List<Map<String, Object>> articles = (List<Map<String, Object>>) response.get("articles");
+                logger.info("API에서 받은 뉴스 개수: {}", articles != null ? articles.size() : 0);
+                
+                if (articles == null || articles.isEmpty()) {
+                    logger.info("API에서 받은 뉴스가 없습니다.");
+                    return;
+                }
+                
                 List<News> savedNews = new ArrayList<>();
                 
                 for (Map<String, Object> article : articles) {
+                    String title = (String) article.get("title");
                     String articleUrl = (String) article.get("url");
+                    String content = (String) article.get("content");
+                    
+                    logger.info("처리 중인 뉴스: title={}, url={}", title, articleUrl);
                     
                     // 이미 존재하는 뉴스인지 확인
                     if (newsService.existsByUrl(articleUrl)) {
+                        logger.info("이미 존재하는 뉴스입니다: {}", articleUrl);
                         continue;
                     }
                     
                     News news = News.builder()
-                            .title((String) article.get("title"))
+                            .title(title)
                             .url(articleUrl)
-                            .content((String) article.get("content"))
-                            .publishedAt(LocalDateTime.now()) // 실제로는 API에서 받은 날짜를 파싱해야 함
+                            .content(content)
+                            .publishedAt(LocalDateTime.now())
                             .build();
                     
                     savedNews.add(newsService.save(news));
+                    logger.info("새로운 뉴스 저장됨: {}", title);
                 }
                 
                 logger.info("새로운 뉴스 {} 건이 크롤링되었습니다.", savedNews.size());

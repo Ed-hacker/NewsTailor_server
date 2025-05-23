@@ -54,3 +54,16 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+// 빌드 설정
+tasks.withType(JavaCompile) {
+    options.compilerArgs = ['-Xlint:none']
+    options.fork = true
+    options.incremental = true
+}
+
+// 테스트 리포트 설정
+tasks.withType(Test) {
+    reports.html.required = false
+    reports.junitXml.required = false
+}
