@@ -17,20 +17,5 @@ public interface UserService {
      */
     Optional<User> findByEmail(String email);
     
-    /**
-     * 이메일 중복 여부를 확인합니다.
-     * 
-     * @param email 확인할 이메일
-     * @return 이메일 사용 가능 여부 (true: 이미 사용 중)
-     */
-    boolean existsByEmail(String email);
-    
-    /**
-     * 사용자 정보를 저장합니다.
-     * 
-     * @param user 저장할 사용자 정보
-     * @return 저장된 사용자 정보
-     */
-    User save(User user);
-    
+    User getCurrentUser(); // 현재 인증된 사용자 정보를 가져오는 메소드 (Spring Security Context 활용)
 } 

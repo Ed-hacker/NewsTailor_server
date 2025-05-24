@@ -1,21 +1,18 @@
 package com.hongik.projectTNP.repository;
 
 import com.hongik.projectTNP.domain.News;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface NewsRepository extends JpaRepository<News, Long> {
-    
-    /**
-     * 발행일 기준으로 정렬된 뉴스 목록을 조회합니다.
-     * 
-     * @return 발행일 기준 내림차순으로 정렬된 뉴스 목록
-     */
-    List<News> findAllByOrderByPublishedAtDesc();
     
     /**
      * 특정 기간 내 발행된 뉴스 목록을 조회합니다.
@@ -34,4 +31,10 @@ public interface NewsRepository extends JpaRepository<News, Long> {
      */
     boolean existsByUrl(String url);
     
+    Optional<News> findByUrl(String url);
+
+    Page<News> findAllByOrderByPublishedAtDesc(Pageable pageable);
+
+    // 사용자 관심사 기반 뉴스 목록 조회를 위한 메소드
+    Page<News> findByCategoryInOrderByPublishedAtDesc(Set<String> categories, Pageable pageable);
 } 

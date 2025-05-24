@@ -1,15 +1,22 @@
 package com.hongik.projectTNP.util;
 
+import com.hongik.projectTNP.domain.User;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
+import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
-import java.util.function.Function;
 
 /**
  * JWT 토큰 생성 및 검증을 위한 유틸리티 클래스
@@ -17,40 +24,42 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    @Value("${jwt.secret:default_secret_key_which_is_at_least_32_bytes_long}")
-    private String secret;
+    private static final Logger log = LoggerFactory.getLogger(JwtUtil.class);
 
-    @Value("${jwt.expiration:86400000}") // 24시간 (밀리초)
-    private long expiration;
+    @Value("${jwt.secret:DefaultSecretKeyStringForJwtTNPProjectLongEnoughToMeetRequirement}")
+    private String secretKeyString;
+
+    @Value("${jwt.expirationMs:3600000}")
+    private long validityInMilliseconds;
+
+    private Key secretKey;
+
+    @PostConstruct
+    protected void init() {
+        if (secretKeyString.getBytes().length < 32) {
+            log.warn("Provided JWT secret key string is too short (less than 32 bytes). Using a default secure key.");
+        }
+        secretKey = Keys.hmacShaKeyFor(secretKeyString.getBytes());
+    }
 
     /**
      * JWT 토큰을 생성합니다.
      *
-     * @param email 사용자 이메일
+     * @param username 사용자 이름
      * @return 생성된 JWT 토큰
      */
-    public String generateToken(String email) {
+    public String generateToken(String username) {
+        Claims claims = Jwts.claims().setSubject(username);
+
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + expiration);
-        
-        Key key = Keys.hmacShaKeyFor(secret.getBytes());
+        Date validity = new Date(now.getTime() + validityInMilliseconds);
 
         return Jwts.builder()
-                .setSubject(email)
+                .setClaims(claims)
                 .setIssuedAt(now)
-                .setExpiration(expiryDate)
-                .signWith(key, SignatureAlgorithm.HS512)
+                .setExpiration(validity)
+                .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
-    }
-
-    /**
-     * 토큰으로부터 이메일을 추출합니다.
-     *
-     * @param token JWT 토큰
-     * @return 추출된 이메일
-     */
-    public String getEmailFromToken(String token) {
-        return getClaimFromToken(token, Claims::getSubject);
     }
 
     /**
@@ -61,40 +70,43 @@ public class JwtUtil {
      */
     public boolean validateToken(String token) {
         try {
-            Key key = Keys.hmacShaKeyFor(secret.getBytes());
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
-            return !isTokenExpired(token);
+            Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
+            return true;
+        } catch (SignatureException ex) {
+            log.error("Invalid JWT signature");
+        } catch (MalformedJwtException ex) {
+            log.error("Invalid JWT token");
+        } catch (ExpiredJwtException ex) {
+            log.error("Expired JWT token");
+        } catch (UnsupportedJwtException ex) {
+            log.error("Unsupported JWT token");
+        } catch (IllegalArgumentException ex) {
+            log.error("JWT claims string is empty.");
+        }
+        return false;
+    }
+
+    /**
+     * 토큰으로부터 이름을 추출합니다.
+     *
+     * @param token JWT 토큰
+     * @return 추출된 이름
+     */
+    public String getUsernameFromToken(String token) {
+        try {
+            return Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token).getBody().getSubject();
         } catch (Exception e) {
-            return false;
+            log.error("Error parsing JWT token: {}", e.getMessage());
+            return null;
         }
     }
 
-    /**
-     * 토큰에서 클레임을 추출합니다.
-     *
-     * @param token JWT 토큰
-     * @param claimsResolver 클레임 처리 함수
-     * @param <T> 반환 타입
-     * @return 추출된 클레임 값
-     */
-    private <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
-        Key key = Keys.hmacShaKeyFor(secret.getBytes());
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-        return claimsResolver.apply(claims);
-    }
-
-    /**
-     * 토큰의 만료 여부를 확인합니다.
-     *
-     * @param token JWT 토큰
-     * @return 만료 여부
-     */
-    private boolean isTokenExpired(String token) {
-        Date expiration = getClaimFromToken(token, Claims::getExpiration);
-        return expiration.before(new Date());
+    public Claims getAllClaimsFromToken(String token) {
+        try {
+            return Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token).getBody();
+        } catch (Exception e) {
+            log.error("Error parsing JWT token claims: {}", e.getMessage());
+            return null;
+        }
     }
 } 

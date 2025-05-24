@@ -1,110 +1,94 @@
 package com.hongik.projectTNP.controller;
 
-import com.hongik.projectTNP.domain.News;
-import com.hongik.projectTNP.domain.Summary;
-import com.hongik.projectTNP.dto.NewsRequestDto;
-import com.hongik.projectTNP.dto.SummaryResponseDto;
+import com.hongik.projectTNP.dto.interest.InterestResponseDto;
+import com.hongik.projectTNP.dto.interest.UserInterestRequestDto;
+import com.hongik.projectTNP.dto.news.NewsAudioResponseDto;
+import com.hongik.projectTNP.dto.news.NewsBriefResponseDto;
+import com.hongik.projectTNP.dto.news.NewsDetailResponseDto;
+import com.hongik.projectTNP.service.InterestService;
 import com.hongik.projectTNP.service.NewsService;
-import com.hongik.projectTNP.service.SummaryService;
-import com.hongik.projectTNP.service.TtsService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal; // Spring Security로부터 사용자 정보 주입
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/news")
+@RequestMapping("/api") // 기본 경로 /api로 통일
+@RequiredArgsConstructor
 public class NewsController {
 
     private final NewsService newsService;
-    private final SummaryService summaryService;
-    private final TtsService ttsService;
+    private final InterestService interestService;
 
-    @Autowired
-    public NewsController(NewsService newsService, SummaryService summaryService, TtsService ttsService) {
-        this.newsService = newsService;
-        this.summaryService = summaryService;
-        this.ttsService = ttsService;
+    // == News Endpoints ==
+    @GetMapping("/news")
+    public ResponseEntity<Page<NewsBriefResponseDto>> getPersonalizedNews(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PageableDefault(size = 10) Pageable pageable) {
+        String userEmail = userDetails.getUsername();
+        Page<NewsBriefResponseDto> newsPage = newsService.getPersonalizedNews(userEmail, pageable);
+        return ResponseEntity.ok(newsPage);
     }
 
-    @GetMapping
-    public ResponseEntity<List<SummaryResponseDto>> getAllNews() {
-        List<News> newsList = newsService.findAll();
-        List<SummaryResponseDto> responseDtos = newsList.stream()
-                .map(news -> {
-                    Summary summary = summaryService.findByNewsId(news.getId());
-                    return SummaryResponseDto.builder()
-                            .id(news.getId())
-                            .title(news.getTitle())
-                            .url(news.getUrl())
-                            .summaryText(summary != null ? summary.getText() : null)
-                            .audioUrl(summary != null ? summary.getAudioUrl() : null)
-                            .publishedAt(news.getPublishedAt())
-                            .build();
-                })
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(responseDtos);
+    @GetMapping("/news/{id}")
+    public ResponseEntity<NewsDetailResponseDto> getNewsDetail(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long id) {
+        String userEmail = userDetails.getUsername();
+        NewsDetailResponseDto newsDetail = newsService.getNewsDetail(id, userEmail);
+        return ResponseEntity.ok(newsDetail);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<SummaryResponseDto> getNewsById(@PathVariable Long id) {
-        News news = newsService.findById(id);
-        Summary summary = summaryService.findByNewsId(id);
-
-        SummaryResponseDto responseDto = SummaryResponseDto.builder()
-                .id(news.getId())
-                .title(news.getTitle())
-                .url(news.getUrl())
-                .content(news.getContent())
-                .summaryText(summary != null ? summary.getText() : null)
-                .audioUrl(summary != null ? summary.getAudioUrl() : null)
-                .publishedAt(news.getPublishedAt())
-                .build();
-
-        return ResponseEntity.ok(responseDto);
+    @GetMapping("/news/{id}/audio")
+    public ResponseEntity<NewsAudioResponseDto> getNewsAudio(
+            @AuthenticationPrincipal UserDetails userDetails, // 인증은 하지만 현재 서비스 로직에서 직접 사용하지 않을 수 있음
+            @PathVariable Long id) {
+        String userEmail = userDetails.getUsername(); // 추후 사용량 제한 등에 활용 가능
+        NewsAudioResponseDto audioResponse = newsService.getNewsAudio(id, userEmail);
+        return ResponseEntity.ok(audioResponse);
     }
 
-    @PostMapping("/summarize/{id}")
-    public ResponseEntity<SummaryResponseDto> summarizeNews(@PathVariable Long id) {
-        News news = newsService.findById(id);
-        String summaryText = summaryService.generateSummary(news.getContent());
-        String audioUrl = ttsService.generateAudio(summaryText);
-
-        Summary summary = Summary.builder()
-                .news(news)
-                .text(summaryText)
-                .audioUrl(audioUrl)
-                .build();
-
-        summaryService.save(summary);
-
-        SummaryResponseDto responseDto = SummaryResponseDto.builder()
-                .id(news.getId())
-                .title(news.getTitle())
-                .summaryText(summaryText)
-                .audioUrl(audioUrl)
-                .publishedAt(news.getPublishedAt())
-                .build();
-
-        return ResponseEntity.ok(responseDto);
+    @PostMapping("/news/{id}/like")
+    public ResponseEntity<Void> likeArticle(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long id) {
+        String userEmail = userDetails.getUsername();
+        newsService.likeArticle(id, userEmail);
+        return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/custom")
-    public ResponseEntity<SummaryResponseDto> processCustomText(@RequestBody NewsRequestDto requestDto) {
-        // 사용자 제공 텍스트에 대한 요약 생성
-        String summaryText = summaryService.generateSummary(requestDto.getContent());
-        String audioUrl = ttsService.generateAudio(summaryText);
+    @DeleteMapping("/news/{id}/like")
+    public ResponseEntity<Void> unlikeArticle(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long id) {
+        String userEmail = userDetails.getUsername();
+        newsService.unlikeArticle(id, userEmail);
+        return ResponseEntity.ok().build();
+    }
 
-        // 임시 응답 생성 (DB에 저장하지 않음)
-        SummaryResponseDto responseDto = SummaryResponseDto.builder()
-                .title(requestDto.getTitle())
-                .content(requestDto.getContent())
-                .summaryText(summaryText)
-                .audioUrl(audioUrl)
-                .build();
+    @PostMapping("/news/{id}/bookmark")
+    public ResponseEntity<Void> bookmarkArticle(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long id) {
+        String userEmail = userDetails.getUsername();
+        newsService.bookmarkArticle(id, userEmail);
+        return ResponseEntity.ok().build();
+    }
 
-        return ResponseEntity.ok(responseDto);
+    @DeleteMapping("/news/{id}/bookmark")
+    public ResponseEntity<Void> unbookmarkArticle(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long id) {
+        String userEmail = userDetails.getUsername();
+        newsService.unbookmarkArticle(id, userEmail);
+        return ResponseEntity.ok().build();
     }
 } 

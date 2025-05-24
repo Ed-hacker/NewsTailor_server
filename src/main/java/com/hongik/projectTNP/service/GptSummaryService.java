@@ -1,5 +1,6 @@
 package com.hongik.projectTNP.service;
 
+import com.hongik.projectTNP.domain.News;
 import com.hongik.projectTNP.domain.Summary;
 import com.hongik.projectTNP.repository.SummaryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,20 +31,29 @@ public class GptSummaryService implements SummaryService {
     private String model;
 
     @Autowired
-    public GptSummaryService(SummaryRepository summaryRepository) {
+    public GptSummaryService(SummaryRepository summaryRepository, RestTemplate restTemplate) {
         this.summaryRepository = summaryRepository;
-        this.restTemplate = new RestTemplate();
+        this.restTemplate = restTemplate;
     }
 
     @Override
-    public String generateSummary(String content) {
+    public Summary summarizeNews(News news) {
+        String summaryText = generateSummary(news.getContent());
+        return Summary.builder()
+                .news(news)
+                .summary_text(summaryText)
+                .build();
+    }
+
+    @Override
+    public String generateSummary(String textToSummarize) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Authorization", "Bearer " + apiKey);
 
         Map<String, Object> messageContent = new HashMap<>();
         messageContent.put("role", "user");
-        messageContent.put("content", "다음 뉴스 내용을 3-4문장으로 요약해주세요:\n\n" + content);
+        messageContent.put("content", "다음 뉴스 내용을 3-4문장으로 요약해주세요:\n\n" + textToSummarize);
 
         Map<String, Object> message = new HashMap<>();
         message.put("messages", List.of(messageContent));
@@ -66,17 +76,14 @@ public class GptSummaryService implements SummaryService {
             }
             return "요약을 생성하는 중 오류가 발생했습니다.";
         } catch (Exception e) {
-            e.printStackTrace();
             return "API 호출 중 오류가 발생했습니다: " + e.getMessage();
         }
     }
 
-    @Override
     public Summary findByNewsId(Long newsId) {
-        return summaryRepository.findByNewsId(newsId);
+        return summaryRepository.findByNewsId(newsId).orElse(null);
     }
 
-    @Override
     public Summary save(Summary summary) {
         return summaryRepository.save(summary);
     }

@@ -8,21 +8,22 @@ import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "tts")
+@Table(name = "user_interest")
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Tts {
+public class UserInterest {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "summary_id", nullable = false, unique = true)
-    private Summary summary;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    @Column(name = "audio_url")
-    private String audioUrl; // S3 등에 저장된 오디오 파일 URL
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "interest_id", nullable = false)
+    private Interest interest;
 } 

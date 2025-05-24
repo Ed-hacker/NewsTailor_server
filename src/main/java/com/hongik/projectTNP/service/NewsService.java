@@ -1,53 +1,65 @@
 package com.hongik.projectTNP.service;
 
-import com.hongik.projectTNP.domain.News;
-
-import java.time.LocalDateTime;
-import java.util.List;
+import com.hongik.projectTNP.dto.news.NewsAudioResponseDto;
+import com.hongik.projectTNP.dto.news.NewsBriefResponseDto;
+import com.hongik.projectTNP.dto.news.NewsDetailResponseDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
- * 뉴스 관련 비즈니스 로직을 처리하는 서비스 인터페이스
+ * 뉴스 관련 비즈니스 로직을 처리하는 서비스 인터페이스 (API 명세 기반)
  */
 public interface NewsService {
-    
+
     /**
-     * 모든 뉴스를 조회합니다.
-     * 
-     * @return 뉴스 목록
+     * 개인화된 뉴스 목록을 페이징하여 조회합니다.
+     * @param userEmail 사용자 이메일
+     * @param pageable 페이징 정보
+     * @return 페이징된 뉴스 간략 정보 목록
      */
-    List<News> findAll();
-    
+    Page<NewsBriefResponseDto> getPersonalizedNews(String userEmail, Pageable pageable);
+
     /**
-     * ID로 뉴스를 조회합니다.
-     * 
-     * @param id 뉴스 ID
-     * @return 조회된 뉴스
+     * 단일 뉴스 기사의 상세 정보를 조회합니다.
+     * @param newsId 뉴스 ID
+     * @param userEmail 사용자 이메일 (좋아요/북마크 여부 확인용)
+     * @return 뉴스 상세 정보
      */
-    News findById(Long id);
-    
+    NewsDetailResponseDto getNewsDetail(Long newsId, String userEmail);
+
     /**
-     * 특정 기간 내 발행된 뉴스를 조회합니다.
-     * 
-     * @param startDate 시작 날짜
-     * @param endDate 종료 날짜
-     * @return 해당 기간 내 뉴스 목록
+     * 뉴스 요약의 TTS 오디오 URL을 조회합니다.
+     * @param newsId 뉴스 ID
+     * @param userEmail 사용자 이메일 (인증/인가용)
+     * @return 뉴스 오디오 정보 (URL 포함)
      */
-    List<News> findByDateRange(LocalDateTime startDate, LocalDateTime endDate);
-    
+    NewsAudioResponseDto getNewsAudio(Long newsId, String userEmail);
+
     /**
-     * 뉴스를 저장합니다.
-     * 
-     * @param news 저장할 뉴스 정보
-     * @return 저장된 뉴스
+     * 뉴스 기사를 '좋아요' 처리합니다.
+     * @param newsId 뉴스 ID
+     * @param userEmail 사용자 이메일
      */
-    News save(News news);
-    
+    void likeArticle(Long newsId, String userEmail);
+
     /**
-     * URL로 뉴스가 존재하는지 확인합니다.
-     * 
-     * @param url 확인할 URL
-     * @return 존재 여부
+     * 뉴스 기사의 '좋아요'를 취소합니다.
+     * @param newsId 뉴스 ID
+     * @param userEmail 사용자 이메일
      */
-    boolean existsByUrl(String url);
-    
+    void unlikeArticle(Long newsId, String userEmail);
+
+    /**
+     * 뉴스 기사를 북마크합니다.
+     * @param newsId 뉴스 ID
+     * @param userEmail 사용자 이메일
+     */
+    void bookmarkArticle(Long newsId, String userEmail);
+
+    /**
+     * 뉴스 기사의 북마크를 취소합니다.
+     * @param newsId 뉴스 ID
+     * @param userEmail 사용자 이메일
+     */
+    void unbookmarkArticle(Long newsId, String userEmail);
 } 

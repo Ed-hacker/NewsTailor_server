@@ -3,7 +3,7 @@ package com.hongik.projectTNP.service;
 import com.hongik.projectTNP.util.S3Uploader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+// import org.springframework.stereotype.Service; // 주석 처리
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.ResponseInputStream;
@@ -17,8 +17,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.UUID;
 
-@Service
-public class PollyTtsService implements TtsService {
+// @Service // 주석 처리
+public class PollyTtsService {
 
     private final PollyClient pollyClient;
     private final S3Uploader s3Uploader;
@@ -27,21 +27,11 @@ public class PollyTtsService implements TtsService {
     private String tempDir;
 
     @Autowired
-    public PollyTtsService(S3Uploader s3Uploader, 
-                          @Value("${aws.access.key}") String accessKey,
-                          @Value("${aws.secret.key}") String secretKey,
-                          @Value("${aws.region:ap-northeast-2}") String region) {
+    public PollyTtsService(S3Uploader s3Uploader, PollyClient pollyClient) {
         this.s3Uploader = s3Uploader;
-        
-        AwsBasicCredentials awsCredentials = AwsBasicCredentials.create(accessKey, secretKey);
-        
-        this.pollyClient = PollyClient.builder()
-                .region(Region.of(region))
-                .credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
-                .build();
+        this.pollyClient = pollyClient;
     }
 
-    @Override
     public String generateAudio(String text) {
         try {
             String uuid = UUID.randomUUID().toString();

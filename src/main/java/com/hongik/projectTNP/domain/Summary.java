@@ -6,10 +6,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "summaries")
+@Table(name = "summary")
 @Getter
 @Builder
 @NoArgsConstructor
@@ -20,30 +19,10 @@ public class Summary {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
-    @JoinColumn(name = "news_id", nullable = false)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "news_id", nullable = false, unique = true)
     private News news;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
-    private String text;
-
-    @Column(name = "audio_url")
-    private String audioUrl;
-
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @PrePersist
-    public void prePersist() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = this.createdAt;
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
+    @Column(columnDefinition = "TEXT")
+    private String summary_text; // 변경: content -> summary_text
 } 
