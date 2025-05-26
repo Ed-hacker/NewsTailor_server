@@ -11,10 +11,10 @@ import lombok.Getter;
 public class TtsContext implements AgentContext {
     
     private String text;           // 음성으로 변환할 텍스트
-    private String voiceId;        // 음성 ID (예: SEOYEON, JOANNA, ...)
-    private String language;       // 언어 코드 (ko-KR, en-US, ...)
-    private String engine;         // TTS 엔진 유형 (NEURAL, STANDARD)
-    private String outputFormat;   // 출력 형식 (MP3, PCM, ...)
+    private String voiceId;        // 음성 ID 
+    private String language;       // 언어 코드 
+    private String engine;         // TTS 엔진 유형 
+    private String outputFormat;   // 출력 형식 
     private String audioUrl;       // 생성된 오디오 파일 URL
     private String errorMessage;   // 오류 발생 시 메시지
     
