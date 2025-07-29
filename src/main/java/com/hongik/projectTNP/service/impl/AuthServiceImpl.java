@@ -38,15 +38,10 @@ public class AuthServiceImpl implements AuthService {
             throw new CustomException(HttpStatus.BAD_REQUEST, "이미 사용 중인 아이디입니다.");
         }
         
-        if (userRepository.existsByEmail(signupRequestDto.getEmail())) {
-            throw new CustomException(HttpStatus.BAD_REQUEST, "이미 사용 중인 이메일입니다.");
-        }
-
         String encodedPassword = passwordEncoder.encode(signupRequestDto.getPassword());
 
         User user = User.builder()
                 .username(signupRequestDto.getUsername())
-                .email(signupRequestDto.getEmail())
                 .password(encodedPassword)
                 .nickname(signupRequestDto.getNickname())
                 .build();

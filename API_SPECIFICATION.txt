@@ -27,7 +27,6 @@
        {
          "id": 1,
          "title": "뉴스 제목",
-         "url": "뉴스 URL",
          "category": "카테고리",
          "publishedAt": "2025-07-29T15:00:00"
        }
@@ -54,8 +53,7 @@
      "content": "뉴스 본문 내용",
      "category": "카테고리",
      "publishedAt": "2025-07-29T15:00:00",
-     "summaryId": 1,
-     "summaryText": "요약 내용",
+     "summaryContent": "요약 내용",
      "isLiked": true,
      "isBookmarked": false,
      "likeCount": 25
@@ -180,7 +178,6 @@
    Request Body:
    {
      "username": "testuser",
-     "email": "user@example.com",
      "password": "password123!",
      "nickname": "홍길동",
      "interestIds": [1, 2, 3]
@@ -188,7 +185,6 @@
    
    Validation Rules:
    - username: 4~20자, 필수
-   - email: 올바른 이메일 형식, 필수
    - password: 8~20자, 영문+숫자+특수문자 각 1개 이상, 필수
    - nickname: 2~10자, 필수
    - interestIds: 관심사 ID 배열, 선택사항
@@ -209,8 +205,7 @@
    Response:
    {
      "accessToken": "eyJhbGciOiJIUzI1NiJ9...",
-     "tokenType": "Bearer",
-     "expiresIn": 3600
+     "username": "testuser"
    }
 
 3. 아이디 중복 체크
@@ -243,13 +238,11 @@
    [
      {
        "id": 1,
-       "name": "기술",
-       "description": "IT, 과학기술 관련 뉴스"
+       "name": "기술"
      },
      {
        "id": 2,
-       "name": "경제",
-       "description": "경제, 금융 관련 뉴스"
+       "name": "경제"
      }
    ]
 
@@ -310,7 +303,7 @@ Validation 에러 응답 예시:
 ================================================================================
 
 주요 테이블:
-1. users: 사용자 정보 (username, email, password, nickname)
+1. users: 사용자 정보 (username, password, nickname)
 2. news: 기존 뉴스 데이터
 3. news_rankings: 네이버 뉴스 랭킹 데이터 (신규)
 4. interests: 관심사 정보
@@ -320,8 +313,8 @@ Validation 에러 응답 예시:
 8. summary: 뉴스 요약 (OpenAI GPT 연동)
 
 변경사항:
-- users 테이블에 username 필드 추가 (unique)
-- 기존 email 필드는 유지하되 로그인은 username 사용
+- users 테이블에서 email 필드 완전 제거
+- 사용자 식별은 username으로만 처리
 - 회원가입 시 관심사 동시 설정 가능
 - TTS 관련 테이블 및 API 제거 (프론트엔드에서 구현)
 

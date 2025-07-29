@@ -10,12 +10,12 @@ import java.util.Optional;
 public interface UserService {
     
     /**
-     * 이메일로 사용자를 조회합니다.
+     * 사용자명으로 사용자를 조회합니다.
      * 
-     * @param email 사용자 이메일
+     * @param username 사용자명
      * @return 조회된 사용자 (Optional)
      */
-    Optional<User> findByEmail(String email);
+    Optional<User> findByUsername(String username);
     
     User getCurrentUser(); // 현재 인증된 사용자 정보를 가져오는 메소드 (Spring Security Context 활용)
 } 

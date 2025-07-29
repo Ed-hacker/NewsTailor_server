@@ -7,6 +7,6 @@ import lombok.Getter;
 @AllArgsConstructor
 public class TokenResponseDto {
     private String accessToken;
-    private String email;
+    private String username;
     // 필요시 refreshToken도 추가 가능
 } 

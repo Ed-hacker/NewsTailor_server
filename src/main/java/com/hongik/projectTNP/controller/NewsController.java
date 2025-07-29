@@ -32,8 +32,8 @@ public class NewsController {
     public ResponseEntity<Page<NewsBriefResponseDto>> getPersonalizedNews(
             @AuthenticationPrincipal UserDetails userDetails,
             @PageableDefault(size = 10) Pageable pageable) {
-        String userEmail = userDetails.getUsername();
-        Page<NewsBriefResponseDto> newsPage = newsService.getPersonalizedNews(userEmail, pageable);
+        String username = userDetails.getUsername();
+        Page<NewsBriefResponseDto> newsPage = newsService.getPersonalizedNews(username, pageable);
         return ResponseEntity.ok(newsPage);
     }
 
@@ -41,8 +41,8 @@ public class NewsController {
     public ResponseEntity<NewsDetailResponseDto> getNewsDetail(
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Long id) {
-        String userEmail = userDetails.getUsername();
-        NewsDetailResponseDto newsDetail = newsService.getNewsDetail(id, userEmail);
+        String username = userDetails.getUsername();
+        NewsDetailResponseDto newsDetail = newsService.getNewsDetail(id, username);
         return ResponseEntity.ok(newsDetail);
     }
 
@@ -51,8 +51,8 @@ public class NewsController {
     public ResponseEntity<Void> likeArticle(
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Long id) {
-        String userEmail = userDetails.getUsername();
-        newsService.likeArticle(id, userEmail);
+        String username = userDetails.getUsername();
+        newsService.likeArticle(id, username);
         return ResponseEntity.ok().build();
     }
 
@@ -60,8 +60,8 @@ public class NewsController {
     public ResponseEntity<Void> unlikeArticle(
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Long id) {
-        String userEmail = userDetails.getUsername();
-        newsService.unlikeArticle(id, userEmail);
+        String username = userDetails.getUsername();
+        newsService.unlikeArticle(id, username);
         return ResponseEntity.ok().build();
     }
 
@@ -69,8 +69,8 @@ public class NewsController {
     public ResponseEntity<Void> bookmarkArticle(
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Long id) {
-        String userEmail = userDetails.getUsername();
-        newsService.bookmarkArticle(id, userEmail);
+        String username = userDetails.getUsername();
+        newsService.bookmarkArticle(id, username);
         return ResponseEntity.ok().build();
     }
 
@@ -78,8 +78,8 @@ public class NewsController {
     public ResponseEntity<Void> unbookmarkArticle(
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Long id) {
-        String userEmail = userDetails.getUsername();
-        newsService.unbookmarkArticle(id, userEmail);
+        String username = userDetails.getUsername();
+        newsService.unbookmarkArticle(id, username);
         return ResponseEntity.ok().build();
     }
 } 
