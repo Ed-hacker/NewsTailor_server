@@ -1,0 +1,302 @@
+================================================================================
+                           TNP 프로젝트 API 명세서
+================================================================================
+
+1. 기본 정보
+   - Base URL: http://localhost:8080
+   - Content-Type: application/json
+   - 인증 방식: JWT Bearer Token (일부 API)
+
+================================================================================
+                              기존 뉴스 API
+================================================================================
+
+1. 개인화된 뉴스 목록 조회
+   GET /api/news
+   
+   Headers:
+   - Authorization: Bearer {JWT_TOKEN}
+   
+   Query Parameters:
+   - page: 페이지 번호 (기본값: 0)
+   - size: 페이지 크기 (기본값: 10)
+   
+   Response:
+   {
+     "content": [
+       {
+         "id": 1,
+         "title": "뉴스 제목",
+         "url": "뉴스 URL",
+         "category": "카테고리",
+         "publishedAt": "2025-07-29T15:00:00"
+       }
+     ],
+     "pageable": {
+       "pageNumber": 0,
+       "pageSize": 10
+     },
+     "totalElements": 100,
+     "totalPages": 10
+   }
+
+2. 뉴스 상세 조회
+   GET /api/news/{id}
+   
+   Headers:
+   - Authorization: Bearer {JWT_TOKEN}
+   
+   Response:
+   {
+     "id": 1,
+     "title": "뉴스 제목",
+     "url": "뉴스 URL",
+     "content": "뉴스 본문 내용",
+     "category": "카테고리",
+     "publishedAt": "2025-07-29T15:00:00",
+     "summaryId": 1,
+     "summaryText": "요약 내용",
+     "isLiked": true,
+     "isBookmarked": false,
+     "likeCount": 25
+   }
+
+3. 뉴스 오디오 조회 (TTS)
+   GET /api/news/{id}/audio
+   
+   Headers:
+   - Authorization: Bearer {JWT_TOKEN}
+   
+   Response:
+   {
+     "newsId": 1,
+     "summaryId": 1,
+     "audioUrl": "https://s3.amazonaws.com/bucket/audio.mp3",
+     "message": "오디오 생성 완료"
+   }
+
+4. 뉴스 좋아요
+   POST /api/news/{id}/like
+   
+   Headers:
+   - Authorization: Bearer {JWT_TOKEN}
+   
+   Response: 200 OK
+
+5. 뉴스 좋아요 취소
+   DELETE /api/news/{id}/like
+   
+   Headers:
+   - Authorization: Bearer {JWT_TOKEN}
+   
+   Response: 200 OK
+
+6. 뉴스 북마크
+   POST /api/news/{id}/bookmark
+   
+   Headers:
+   - Authorization: Bearer {JWT_TOKEN}
+   
+   Response: 200 OK
+
+7. 뉴스 북마크 취소
+   DELETE /api/news/{id}/bookmark
+   
+   Headers:
+   - Authorization: Bearer {JWT_TOKEN}
+   
+   Response: 200 OK
+
+================================================================================
+                           네이버 뉴스 랭킹 API
+================================================================================
+
+1. 섹션별 뉴스 랭킹 조회
+   GET /api/v1/news/ranking
+   
+   Query Parameters:
+   - sectionId: 섹션 ID (필수)
+     * 100: 정치
+     * 101: 경제
+     * 102: 사회
+     * 103: 생활/문화
+     * 104: 세계
+     * 105: IT/과학
+   - date: 날짜 (YYYYMMDD 형식, 필수)
+   
+   Example: GET /api/v1/news/ranking?sectionId=105&date=20250729
+   
+   Response:
+   [
+     {
+       "id": 1,
+       "sectionId": 105,
+       "press": "조선일보",
+       "rank": 1,
+       "title": "AI 기술 발전의 새로운 전환점",
+       "url": "https://news.naver.com/main/read.naver?mode=LSD&mid=shm&sid1=105&oid=023&aid=0003826123",
+       "body": "인공지능(AI) 기술이 새로운 전환점을 맞고 있다. 최근 발표된 연구에 따르면...",
+       "collectedAt": "2025-07-29T14:05:00"
+     },
+     {
+       "id": 2,
+       "sectionId": 105,
+       "press": "중앙일보",
+       "rank": 2,
+       "title": "메타버스 플랫폼 사용자 급증",
+       "url": "https://news.naver.com/main/read.naver?mode=LSD&mid=shm&sid1=105&oid=025&aid=0003426789",
+       "body": "국내 메타버스 플랫폼 이용자가 전년 대비 150% 증가한 것으로 나타났다...",
+       "collectedAt": "2025-07-29T14:05:00"
+     }
+   ]
+
+2. 최근 1위 뉴스 조회
+   GET /api/v1/news/ranking/top
+   
+   Query Parameters:
+   - limit: 조회할 기사 수 (기본값: 20, 최대 100)
+   
+   Example: GET /api/v1/news/ranking/top?limit=5
+   
+   Response:
+   [
+     {
+       "id": 5,
+       "sectionId": 100,
+       "press": "연합뉴스",
+       "rank": 1,
+       "title": "국정감사 주요 이슈 분석",
+       "url": "https://news.naver.com/main/read.naver?mode=LSD&mid=shm&sid1=100&oid=001&aid=0014826456",
+       "body": "올해 국정감사에서 제기된 주요 이슈들을 분석해보면...",
+       "collectedAt": "2025-07-29T13:05:00"
+     }
+   ]
+
+3. 특정 기사 본문 조회
+   GET /api/v1/news/ranking/{id}/content
+   
+   Response:
+   {
+     "id": 1,
+     "title": "AI 기술 발전의 새로운 전환점",
+     "url": "https://news.naver.com/main/read.naver?mode=LSD&mid=shm&sid1=105&oid=023&aid=0003826123",
+     "body": "인공지능(AI) 기술이 새로운 전환점을 맞고 있다. 최근 발표된 연구에 따르면 대화형 AI의 성능이 이전보다 대폭 향상되었으며, 이는 다양한 산업 분야에 혁신적인 변화를 가져올 것으로 예상된다고 전문가들은 분석했다..."
+   }
+
+================================================================================
+                              인증 API
+================================================================================
+
+1. 회원가입
+   POST /api/auth/signup
+   
+   Request Body:
+   {
+     "email": "user@example.com",
+     "password": "password123",
+     "name": "홍길동"
+   }
+   
+   Response:
+   {
+     "accessToken": "eyJhbGciOiJIUzI1NiJ9...",
+     "tokenType": "Bearer",
+     "expiresIn": 3600
+   }
+
+2. 로그인
+   POST /api/auth/login
+   
+   Request Body:
+   {
+     "email": "user@example.com",
+     "password": "password123"
+   }
+   
+   Response:
+   {
+     "accessToken": "eyJhbGciOiJIUzI1NiJ9...",
+     "tokenType": "Bearer",
+     "expiresIn": 3600
+   }
+
+================================================================================
+                              관심사 API
+================================================================================
+
+1. 사용 가능한 관심사 목록 조회
+   GET /api/interests
+   
+   Response:
+   [
+     {
+       "id": 1,
+       "name": "기술",
+       "description": "IT, 과학기술 관련 뉴스"
+     },
+     {
+       "id": 2,
+       "name": "경제",
+       "description": "경제, 금융 관련 뉴스"
+     }
+   ]
+
+2. 사용자 관심사 설정
+   POST /api/user/interests
+   
+   Headers:
+   - Authorization: Bearer {JWT_TOKEN}
+   
+   Request Body:
+   {
+     "interestIds": [1, 2, 3]
+   }
+   
+   Response: 200 OK
+
+================================================================================
+                           에러 응답 형식
+================================================================================
+
+HTTP Status Code와 함께 다음 형식의 에러 응답이 반환됩니다:
+
+{
+  "timestamp": "2025-07-29T15:30:00.123+09:00",
+  "status": 404,
+  "error": "Not Found",
+  "message": "뉴스를 찾을 수 없습니다: 999",
+  "path": "/api/news/999"
+}
+
+주요 에러 코드:
+- 400 Bad Request: 잘못된 요청 파라미터
+- 401 Unauthorized: 인증 토큰이 없거나 유효하지 않음
+- 403 Forbidden: 권한 부족
+- 404 Not Found: 리소스를 찾을 수 없음
+- 500 Internal Server Error: 서버 내부 오류
+
+================================================================================
+                            크롤링 스케줄
+================================================================================
+
+네이버 뉴스 랭킹 크롤링:
+- 실행 주기: 매 정시 5분마다 (예: 09:05, 10:05, 11:05...)
+- 크롤링 대상: 모든 섹션 (정치, 경제, 사회, 생활/문화, 세계, IT/과학)
+- 중복 방지: URL 기준으로 중복 기사 저장 방지
+- 본문 크롤링: 각 기사별 본문 내용 수집
+- 지연 처리: 기사별 1초 지연으로 서버 부하 방지
+
+================================================================================
+                            데이터베이스
+================================================================================
+
+주요 테이블:
+1. users: 사용자 정보
+2. news: 기존 뉴스 데이터
+3. news_rankings: 네이버 뉴스 랭킹 데이터 (신규)
+4. interests: 관심사 정보
+5. user_interest: 사용자-관심사 연결
+6. article_like: 뉴스 좋아요
+7. bookmark: 뉴스 북마크
+
+================================================================================
