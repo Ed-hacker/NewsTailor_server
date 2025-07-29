@@ -2,8 +2,10 @@ package com.hongik.projectTNP.exception;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestControllerAdvice
@@ -23,7 +25,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(errorResponse);
     }
 
-    // 필요한 다른 예외 핸들러들 추가 가능 (e.g., MethodArgumentNotValidException 등)
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
+        String errorMessage = ex.getBindingResult().getFieldErrors().stream()
+                .map(error -> error.getDefaultMessage())
+                .collect(Collectors.joining(", "));
+        
+        log.error("Validation 오류: {}", errorMessage);
+        ErrorResponse errorResponse = new ErrorResponse(400, errorMessage);
+        return ResponseEntity.badRequest().body(errorResponse);
+    }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex) {

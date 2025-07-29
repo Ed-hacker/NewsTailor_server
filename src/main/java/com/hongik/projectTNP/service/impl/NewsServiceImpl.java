@@ -43,7 +43,7 @@ public class NewsServiceImpl implements NewsService {
     @Override
     @Transactional(readOnly = true)
     public Page<NewsBriefResponseDto> getPersonalizedNews(String userEmail, Pageable pageable) {
-        User user = userRepository.findByEmail(userEmail)
+        User user = userRepository.findByUsername(userEmail)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다: " + userEmail));
 
         List<UserInterest> userInterests = userInterestRepository.findByUser(user);
@@ -69,7 +69,7 @@ public class NewsServiceImpl implements NewsService {
     @Override
     @Transactional(readOnly = true)
     public NewsDetailResponseDto getNewsDetail(Long newsId, String userEmail) {
-        User user = userRepository.findByEmail(userEmail)
+        User user = userRepository.findByUsername(userEmail)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다: " + userEmail));
         News news = newsRepository.findById(newsId)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "뉴스를 찾을 수 없습니다: " + newsId));
@@ -112,7 +112,7 @@ public class NewsServiceImpl implements NewsService {
     @Override
     @Transactional
     public void likeArticle(Long newsId, String userEmail) {
-        User user = userRepository.findByEmail(userEmail)
+        User user = userRepository.findByUsername(userEmail)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다: " + userEmail));
         News news = newsRepository.findById(newsId)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "뉴스를 찾을 수 없습니다: " + newsId));
@@ -126,7 +126,7 @@ public class NewsServiceImpl implements NewsService {
     @Override
     @Transactional
     public void unlikeArticle(Long newsId, String userEmail) {
-        User user = userRepository.findByEmail(userEmail)
+        User user = userRepository.findByUsername(userEmail)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다: " + userEmail));
         News news = newsRepository.findById(newsId)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "뉴스를 찾을 수 없습니다: " + newsId));
@@ -137,7 +137,7 @@ public class NewsServiceImpl implements NewsService {
     @Override
     @Transactional
     public void bookmarkArticle(Long newsId, String userEmail) {
-        User user = userRepository.findByEmail(userEmail)
+        User user = userRepository.findByUsername(userEmail)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다: " + userEmail));
         News news = newsRepository.findById(newsId)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "뉴스를 찾을 수 없습니다: " + newsId));
@@ -151,7 +151,7 @@ public class NewsServiceImpl implements NewsService {
     @Override
     @Transactional
     public void unbookmarkArticle(Long newsId, String userEmail) {
-        User user = userRepository.findByEmail(userEmail)
+        User user = userRepository.findByUsername(userEmail)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다: " + userEmail));
         News news = newsRepository.findById(newsId)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "뉴스를 찾을 수 없습니다: " + newsId));

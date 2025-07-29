@@ -38,7 +38,7 @@ public class InterestServiceImpl implements InterestService {
     @Override
     @Transactional
     public void submitUserInterests(UserInterestRequestDto userInterestRequestDto, String userEmail) {
-        User user = userRepository.findByEmail(userEmail)
+        User user = userRepository.findByUsername(userEmail)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다: " + userEmail));
 
         // 기존 사용자 관심사 삭제 (UserInterestRepository에 deleteByUser 메소드가 있다고 가정)

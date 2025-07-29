@@ -188,13 +188,35 @@
 ================================================================================
 
 1. 회원가입
-   POST /api/auth/signup
+   POST /api/signup
    
    Request Body:
    {
+     "username": "testuser",
      "email": "user@example.com",
-     "password": "password123",
-     "name": "홍길동"
+     "password": "password123!",
+     "nickname": "홍길동",
+     "interestIds": [1, 2, 3]
+   }
+   
+   Validation Rules:
+   - username: 4~20자, 필수
+   - email: 올바른 이메일 형식, 필수
+   - password: 8~20자, 영문+숫자+특수문자 각 1개 이상, 필수
+   - nickname: 2~10자, 필수
+   - interestIds: 관심사 ID 배열, 선택사항
+   
+   Response:
+   201 Created
+   "회원가입 성공"
+
+2. 로그인
+   POST /api/login
+   
+   Request Body:
+   {
+     "username": "testuser",
+     "password": "password123!"
    }
    
    Response:
@@ -204,20 +226,23 @@
      "expiresIn": 3600
    }
 
-2. 로그인
-   POST /api/auth/login
+3. 아이디 중복 체크
+   GET /api/auth/check-username?username={username}
    
-   Request Body:
-   {
-     "email": "user@example.com",
-     "password": "password123"
-   }
+   Query Parameters:
+   - username: 체크할 사용자명 (4~20자)
    
    Response:
    {
-     "accessToken": "eyJhbGciOiJIUzI1NiJ9...",
-     "tokenType": "Bearer",
-     "expiresIn": 3600
+     "available": true,
+     "message": "사용 가능한 아이디입니다."
+   }
+   
+   또는
+   
+   {
+     "available": false,
+     "message": "이미 사용 중인 아이디입니다."
    }
 
 ================================================================================
@@ -269,11 +294,18 @@ HTTP Status Code와 함께 다음 형식의 에러 응답이 반환됩니다:
 }
 
 주요 에러 코드:
-- 400 Bad Request: 잘못된 요청 파라미터
+- 400 Bad Request: 잘못된 요청 파라미터, Validation 오류
+  * 예시: "아이디는 4~20자 사이여야 합니다., 비밀번호는 영문, 숫자, 특수문자를 각각 최소 1개씩 포함해야 합니다."
 - 401 Unauthorized: 인증 토큰이 없거나 유효하지 않음
 - 403 Forbidden: 권한 부족
 - 404 Not Found: 리소스를 찾을 수 없음
 - 500 Internal Server Error: 서버 내부 오류
+
+Validation 에러 응답 예시:
+{
+  "status": 400,
+  "message": "비밀번호는 8~20자 사이여야 합니다., 비밀번호는 영문, 숫자, 특수문자를 각각 최소 1개씩 포함해야 합니다."
+}
 
 ================================================================================
                             크롤링 스케줄
@@ -291,12 +323,17 @@ HTTP Status Code와 함께 다음 형식의 에러 응답이 반환됩니다:
 ================================================================================
 
 주요 테이블:
-1. users: 사용자 정보
+1. users: 사용자 정보 (username, email, password, nickname)
 2. news: 기존 뉴스 데이터
 3. news_rankings: 네이버 뉴스 랭킹 데이터 (신규)
 4. interests: 관심사 정보
 5. user_interest: 사용자-관심사 연결
 6. article_like: 뉴스 좋아요
 7. bookmark: 뉴스 북마크
+
+변경사항:
+- users 테이블에 username 필드 추가 (unique)
+- 기존 email 필드는 유지하되 로그인은 username 사용
+- 회원가입 시 관심사 동시 설정 가능
 
 ================================================================================

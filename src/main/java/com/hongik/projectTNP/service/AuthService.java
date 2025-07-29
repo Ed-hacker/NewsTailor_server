@@ -7,4 +7,5 @@ import com.hongik.projectTNP.dto.auth.TokenResponseDto;
 public interface AuthService {
     void signup(SignupRequestDto signupRequestDto);
     TokenResponseDto login(LoginRequestDto loginRequestDto);
+    boolean checkUsernameAvailability(String username);
 } 
