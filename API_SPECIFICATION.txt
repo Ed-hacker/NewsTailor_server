@@ -61,21 +61,8 @@
      "likeCount": 25
    }
 
-3. 뉴스 오디오 조회 (TTS)
-   GET /api/news/{id}/audio
-   
-   Headers:
-   - Authorization: Bearer {JWT_TOKEN}
-   
-   Response:
-   {
-     "newsId": 1,
-     "summaryId": 1,
-     "audioUrl": "https://s3.amazonaws.com/bucket/audio.mp3",
-     "message": "오디오 생성 완료"
-   }
 
-4. 뉴스 좋아요
+3. 뉴스 좋아요
    POST /api/news/{id}/like
    
    Headers:
@@ -83,7 +70,7 @@
    
    Response: 200 OK
 
-5. 뉴스 좋아요 취소
+4. 뉴스 좋아요 취소
    DELETE /api/news/{id}/like
    
    Headers:
@@ -91,7 +78,7 @@
    
    Response: 200 OK
 
-6. 뉴스 북마크
+5. 뉴스 북마크
    POST /api/news/{id}/bookmark
    
    Headers:
@@ -99,7 +86,7 @@
    
    Response: 200 OK
 
-7. 뉴스 북마크 취소
+6. 뉴스 북마크 취소
    DELETE /api/news/{id}/bookmark
    
    Headers:
@@ -330,10 +317,12 @@ Validation 에러 응답 예시:
 5. user_interest: 사용자-관심사 연결
 6. article_like: 뉴스 좋아요
 7. bookmark: 뉴스 북마크
+8. summary: 뉴스 요약 (OpenAI GPT 연동)
 
 변경사항:
 - users 테이블에 username 필드 추가 (unique)
 - 기존 email 필드는 유지하되 로그인은 username 사용
 - 회원가입 시 관심사 동시 설정 가능
+- TTS 관련 테이블 및 API 제거 (프론트엔드에서 구현)
 
 ================================================================================

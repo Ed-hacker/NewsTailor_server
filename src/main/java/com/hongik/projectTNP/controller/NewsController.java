@@ -2,7 +2,6 @@ package com.hongik.projectTNP.controller;
 
 import com.hongik.projectTNP.dto.interest.InterestResponseDto;
 import com.hongik.projectTNP.dto.interest.UserInterestRequestDto;
-import com.hongik.projectTNP.dto.news.NewsAudioResponseDto;
 import com.hongik.projectTNP.dto.news.NewsBriefResponseDto;
 import com.hongik.projectTNP.dto.news.NewsDetailResponseDto;
 import com.hongik.projectTNP.service.InterestService;
@@ -47,14 +46,6 @@ public class NewsController {
         return ResponseEntity.ok(newsDetail);
     }
 
-    @GetMapping("/news/{id}/audio")
-    public ResponseEntity<NewsAudioResponseDto> getNewsAudio(
-            @AuthenticationPrincipal UserDetails userDetails, // 인증은 하지만 현재 서비스 로직에서 직접 사용하지 않을 수 있음
-            @PathVariable Long id) {
-        String userEmail = userDetails.getUsername(); // 추후 사용량 제한 등에 활용 가능
-        NewsAudioResponseDto audioResponse = newsService.getNewsAudio(id, userEmail);
-        return ResponseEntity.ok(audioResponse);
-    }
 
     @PostMapping("/news/{id}/like")
     public ResponseEntity<Void> likeArticle(

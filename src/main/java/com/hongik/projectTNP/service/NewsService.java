@@ -1,6 +1,5 @@
 package com.hongik.projectTNP.service;
 
-import com.hongik.projectTNP.dto.news.NewsAudioResponseDto;
 import com.hongik.projectTNP.dto.news.NewsBriefResponseDto;
 import com.hongik.projectTNP.dto.news.NewsDetailResponseDto;
 import org.springframework.data.domain.Page;
@@ -27,13 +26,6 @@ public interface NewsService {
      */
     NewsDetailResponseDto getNewsDetail(Long newsId, String userEmail);
 
-    /**
-     * 뉴스 요약의 TTS 오디오 URL을 조회합니다.
-     * @param newsId 뉴스 ID
-     * @param userEmail 사용자 이메일 (인증/인가용)
-     * @return 뉴스 오디오 정보 (URL 포함)
-     */
-    NewsAudioResponseDto getNewsAudio(Long newsId, String userEmail);
 
     /**
      * 뉴스 기사를 '좋아요' 처리합니다.

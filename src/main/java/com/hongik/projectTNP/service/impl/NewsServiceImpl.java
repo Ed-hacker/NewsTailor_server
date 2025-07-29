@@ -1,7 +1,6 @@
 package com.hongik.projectTNP.service.impl;
 
 import com.hongik.projectTNP.domain.*;
-import com.hongik.projectTNP.dto.news.NewsAudioResponseDto;
 import com.hongik.projectTNP.dto.news.NewsBriefResponseDto;
 import com.hongik.projectTNP.dto.news.NewsDetailResponseDto;
 import com.hongik.projectTNP.exception.CustomException;
@@ -10,13 +9,10 @@ import com.hongik.projectTNP.service.NewsService;
 import com.hongik.projectTNP.service.SummaryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,13 +25,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class NewsServiceImpl implements NewsService {
 
-    private static final Logger log = LoggerFactory.getLogger(NewsServiceImpl.class);
 
     private final NewsRepository newsRepository;
     private final UserRepository userRepository;
     private final UserInterestRepository userInterestRepository;
     private final SummaryRepository summaryRepository;
-    private final TtsRepository ttsRepository;
     private final ArticleLikeRepository articleLikeRepository;
     private final BookmarkRepository bookmarkRepository;
     private final SummaryService summaryService;
@@ -83,31 +77,6 @@ public class NewsServiceImpl implements NewsService {
         return NewsDetailResponseDto.from(news, summary, isLiked, isBookmarked, likeCount);
     }
 
-    @Override
-    @Transactional
-    public NewsAudioResponseDto getNewsAudio(Long newsId, String userEmail) {
-        News news = newsRepository.findById(newsId)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "뉴스를 찾을 수 없습니다: " + newsId));
-
-        // TtsService가 비활성화되었으므로 임시 응답 또는 null 반환
-        // Summary summary = summaryRepository.findByNews(news)
-        //         .orElseGet(() -> summaryService.createSummary(news, "기사 요약 요청")); // 요약이 없으면 생성
-        //
-        // Tts tts = ttsRepository.findBySummary(summary)
-        //         .orElseGet(() -> {
-        //             // String audioUrl = ttsService.generateAndUploadTts(summary);
-        //             // Tts newTts = Tts.builder()
-        //             //         .summary(summary)
-        //             //         .audioUrl(audioUrl) // 실제 S3 URL 또는 임시 URL
-        //             //         .build();
-        //             // return ttsRepository.save(newTts);
-        //             return Tts.builder().summary(summary).audioUrl("TTS_DISABLED_TEMP_URL").build(); // 임시 데이터
-        //         });
-        //
-        // return new NewsAudioResponseDto(news.getId(), tts.getAudioUrl());
-
-        return new NewsAudioResponseDto(news.getId(), null, "TTS 기능이 현재 비활성화되어 있습니다."); // summaryId에 null 전달
-    }
 
     @Override
     @Transactional
