@@ -31,7 +31,7 @@ public class NewsRanking {
     @Column(length = 50, nullable = false)
     private String press;
     
-    @Column(nullable = false)
+    @Column(name = "`rank`", nullable = false)
     private Integer rank;
     
     @Column(length = 300, nullable = false)
