@@ -67,6 +67,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional(readOnly = true)
     public TokenResponseDto login(LoginRequestDto loginRequestDto) {
+        System.out.println("DEBUG: 로그인 요청 - 아이디: '" + loginRequestDto.getUsername() + "', 길이: " + loginRequestDto.getUsername().length());
         User user = userRepository.findByUsername(loginRequestDto.getUsername())
                 .orElseThrow(() -> new CustomException(HttpStatus.UNAUTHORIZED, "아이디 또는 비밀번호가 일치하지 않습니다."));
 

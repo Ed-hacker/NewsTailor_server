@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "news_rankings", 
        indexes = {
-           @Index(name = "idx_section_rank", columnList = "sectionId, rank"),
+           @Index(name = "idx_section_rank", columnList = "sectionId, `rank`"),
            @Index(name = "idx_collected_at", columnList = "collectedAt"),
            @Index(name = "idx_url", columnList = "url", unique = true)
        })

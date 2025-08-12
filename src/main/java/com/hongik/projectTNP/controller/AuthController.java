@@ -32,7 +32,7 @@ public class AuthController {
     }
 
     @GetMapping("/auth/check-username")
-    public ResponseEntity<UsernameCheckResponseDto> checkUsername(@RequestParam String username) {
+    public ResponseEntity<UsernameCheckResponseDto> checkUsername(@RequestParam("username") String username) {
         if (!StringUtils.hasText(username)) {
             return ResponseEntity.badRequest().body(
                 new UsernameCheckResponseDto(false, "아이디를 입력해주세요.")
