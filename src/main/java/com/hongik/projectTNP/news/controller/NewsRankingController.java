@@ -22,19 +22,19 @@ public class NewsRankingController {
     private final NewsRankingService newsRankingService;
 
     /**
-     * 글로벌 TOP 20 랭킹 뉴스 조회 (요약 포함)
-     * GET /api/v1/news/ranking/global/top20
+     * 랭킹 뉴스 조회 (요약 포함)
+     * GET /api/v1/news/ranking
      */
-    @GetMapping("/ranking/global/top20")
-    public ResponseEntity<List<NewsRankingResponse>> getGlobalTop20() {
+    @GetMapping("/ranking")
+    public ResponseEntity<List<NewsRankingResponse>> getRankingNews() {
 
-        log.info("글로벌 TOP 20 랭킹 조회 요청");
+        log.info("랭킹 뉴스 조회 요청");
 
         try {
             List<NewsRankingResponse> topRankings = newsRankingService.getGlobalTopRankings(20);
             return ResponseEntity.ok(topRankings);
         } catch (Exception e) {
-            log.error("글로벌 TOP 20 랭킹 조회 실패 - error: {}", e.getMessage());
+            log.error("랭킹 뉴스 조회 실패 - error: {}", e.getMessage());
             return ResponseEntity.internalServerError().build();
         }
     }

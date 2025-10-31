@@ -14,8 +14,8 @@
 
 ⚠️ 중요: 랭킹 뉴스는 북마크 불가능 (요약 뉴스만 북마크 가능)
 
-1. 글로벌 TOP 20 랭킹 뉴스 조회 (Gemini 요약 포함)
-   GET /api/v1/news/ranking/global/top20
+1. 랭킹 뉴스 조회 (Gemini 요약 포함)
+   GET /api/v1/news/ranking
 
    설명:
    - 모든 카테고리에서 rank 낮은 순으로 최근 24시간 내 20개 반환
@@ -24,7 +24,7 @@
    - Gemini AI가 자동으로 생성한 요약 포함
    - 하루 3번 (08:00, 13:00, 20:00) 자동 갱신
 
-   Example: GET /api/v1/news/ranking/global/top20
+   Example: GET /api/v1/news/ranking
 
    Response:
    [
@@ -327,6 +327,7 @@
 
 ⚠️ 중요: 북마크는 요약 뉴스(SummaryNewsCache)만 가능합니다.
          랭킹 뉴스(News)는 북마크할 수 없습니다.
+         사용자당 최대 50개까지 북마크 가능합니다.
 
 1. 북마크 추가
    POST /api/bookmark?summaryNewsCacheId={id}
@@ -339,15 +340,17 @@
 
    설명:
    - 요약 뉴스를 북마크에 추가
+   - 북마크 시 뉴스 정보(제목, URL, 요약 등)를 복사해서 저장
+   - 스케줄러가 캐시를 삭제해도 북마크는 유지됨
    - 이미 북마크된 뉴스일 경우 에러 반환
-   - 북마크된 요약 뉴스는 스케줄러 실행 시에도 삭제되지 않음
+   - 사용자당 최대 50개 제한
 
    Response:
    200 OK
    "북마크가 추가되었습니다."
 
    에러 응답:
-   - 400 Bad Request: 이미 북마크된 뉴스
+   - 400 Bad Request: 이미 북마크된 뉴스 또는 최대 50개 초과
    - 401 Unauthorized: 인증 토큰 없음
    - 404 Not Found: 요약 뉴스를 찾을 수 없음
 
@@ -376,7 +379,9 @@
 
    설명:
    - 현재 사용자가 북마크한 모든 요약 뉴스 조회
-   - 북마크된 순서대로 반환
+   - 북마크된 시간 역순(최신순)으로 반환
+   - 캐시가 삭제되어도 북마크는 계속 유지됨
+   - 최대 50개까지 조회 가능
 
    Response:
    [
@@ -386,8 +391,7 @@
        "sectionName": "정치",
        "title": "정치 뉴스 제목",
        "url": "https://news.naver.com/...",
-       "summary": "Gemini가 생성한 요약 내용...",
-       "rankOrder": 1
+       "summary": "Gemini가 생성한 요약 내용..."
      },
      {
        "id": 456,
@@ -395,8 +399,7 @@
        "sectionName": "경제",
        "title": "경제 뉴스 제목",
        "url": "https://news.naver.com/...",
-       "summary": "Gemini가 생성한 요약 내용...",
-       "rankOrder": 2
+       "summary": "Gemini가 생성한 요약 내용..."
      }
    ]
 
@@ -460,10 +463,11 @@ Gemini API 호출 최적화:
 
 데이터 보관 정책:
 - news_rankings: 최근 2일치만 유지
-- summary_news_cache: 최근 12시간치만 유지 (북마크된 뉴스는 제외)
+- summary_news_cache: 최신 12개만 유지 (하루 3번 갱신)
+- bookmark: 사용자당 최대 50개, 무기한 보관
 - 크롤링 시작 전 자동으로 오래된 데이터 삭제
-- 북마크된 요약 뉴스는 스케줄러 실행 시에도 삭제되지 않음
-- 예상 데이터량: 약 150~200 MB (2일치 랭킹 + 캐시)
+- 북마크된 뉴스 정보는 bookmark 테이블에 복사되어 영구 보존
+- 예상 데이터량: 약 150~200 MB (2일치 랭킹 + 캐시 + 북마크)
 
 ================================================================================
                             데이터베이스
@@ -487,13 +491,16 @@ AWS RDS (MySQL):
    - 크롤링 소스: https://news.naver.com/section/{sectionId}
    - 컬럼: id, section_id, section_name, title, url, summary, rank_order, generated_at
    - 인덱스: section_id, rank_order, generated_at
-   - 하루 3번 갱신 (북마크된 뉴스는 보존)
+   - 하루 3번 갱신 (섹션당 4개씩, 총 24개 유지)
 5. interests: 관심사 정보 (ID: 100~105)
 6. user_interest: 사용자-관심사 연결 (정확히 3개)
 7. article_like: 뉴스 좋아요
-8. bookmark: 요약 뉴스 북마크 (summary_news_cache 참조)
+8. bookmark: 요약 뉴스 북마크
+   - 컬럼: id, user_id, section_id, section_name, title, url, summary, created_at
+   - 뉴스 정보를 직접 저장 (캐시 삭제와 무관하게 보존)
    - ⚠️ 중요: 랭킹 뉴스(news)는 북마크 불가, 요약 뉴스만 가능
-   - 북마크된 요약 뉴스는 스케줄러 실행 시 삭제되지 않음
+   - 사용자당 최대 50개 제한
+   - URL 기준 중복 방지
 9. summary: 뉴스 요약 (Gemini API 연동)
 
 변경사항:
@@ -504,7 +511,12 @@ AWS RDS (MySQL):
 - TTS 관련 테이블 및 API 제거 (프론트엔드에서 구현)
 - H2 Database 제거 (AWS RDS MySQL만 사용)
 - summary_news_cache 테이블 추가 (캐시 기반 요약 뉴스)
-- bookmark 테이블 수정: news 대신 summary_news_cache 참조
+- bookmark 테이블 대폭 수정:
+  * summary_news_cache 참조 제거
+  * 뉴스 정보를 직접 저장 (title, url, summary 등)
+  * 사용자당 최대 50개 제한
+  * URL 기준 중복 방지
+  * 캐시 삭제와 무관하게 영구 보존
 - 사용자 정보 조회 API 추가 (GET /api/user/info)
 - 프로필 수정 API 추가 (PUT /api/user/profile)
 - 북마크 API 추가 (요약 뉴스만 북마크 가능)
@@ -512,6 +524,7 @@ AWS RDS (MySQL):
 - news_rankings 테이블에 summary 컬럼 추가 (Gemini 요약)
 - 랭킹 뉴스 API 단순화: 글로벌 TOP 20만 제공 (요약 포함)
 - 기존 NewsController 제거 (불필요한 API 정리)
+
 
 ================================================================================
                               AI 요약 기능
@@ -561,7 +574,7 @@ Gemini API 사용:
 2. 사용자 정보 조회: GET /api/user/info
 3. 프로필 수정: PUT /api/user/profile
 4. 관심사 설정: POST /api/user/interests (3개 필수)
-5. 글로벌 TOP 20: GET /api/v1/news/ranking/global/top20
+5. 랭킹 뉴스: GET /api/v1/news/ranking
 6. 요약 뉴스 조회: GET /api/v1/summary-news?page=0
 7. 북마크 추가: POST /api/bookmark?summaryNewsCacheId=123
 8. 북마크 목록: GET /api/bookmark

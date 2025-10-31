@@ -1,6 +1,5 @@
 package com.hongik.projectTNP.domain;
 
-import com.hongik.projectTNP.news.domain.SummaryNewsCache;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -10,10 +9,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "bookmark",
-       uniqueConstraints = {
-           @UniqueConstraint(columnNames = {"user_id", "summary_news_cache_id"})
-       })
+@Table(name = "bookmark")
 @Getter
 @Builder
 @NoArgsConstructor
@@ -28,9 +24,22 @@ public class Bookmark {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "summary_news_cache_id", nullable = false)
-    private SummaryNewsCache summaryNewsCache;
+    // 뉴스 정보를 직접 저장 (캐시가 삭제되어도 북마크는 유지)
+    @Column(nullable = false)
+    private Integer sectionId;
+
+    @Column(length = 50, nullable = false)
+    private String sectionName;
+
+    @Column(length = 300, nullable = false)
+    private String title;
+
+    @Column(length = 500, nullable = false)
+    private String url;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String summary;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
