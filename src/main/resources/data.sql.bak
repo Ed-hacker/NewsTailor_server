@@ -1,0 +1,110 @@
+-- 관심사 데이터 (Interest)
+INSERT INTO interest (id, name) VALUES (100, '정치');
+INSERT INTO interest (id, name) VALUES (101, '경제');
+INSERT INTO interest (id, name) VALUES (102, '사회');
+INSERT INTO interest (id, name) VALUES (103, '생활/문화');
+INSERT INTO interest (id, name) VALUES (104, '세계');
+INSERT INTO interest (id, name) VALUES (105, 'IT/과학');
+
+-- 사용자 데이터 (User)
+-- 비밀번호: password123! (BCrypt 인코딩 필요 - 실제로는 회원가입 API 사용 권장)
+INSERT INTO users (id, username, password, nickname, created_at) VALUES
+(1, 'testuser1', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhC2', '홍길동', NOW());
+
+INSERT INTO users (id, username, password, nickname, created_at) VALUES
+(2, 'testuser2', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhC2', '김철수', NOW());
+
+INSERT INTO users (id, username, password, nickname, created_at) VALUES
+(3, 'testuser3', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhC2', '이영희', NOW());
+
+-- 사용자 관심사 매핑 (UserInterest)
+-- testuser1: 정치, 경제
+INSERT INTO user_interest (user_id, interest_id) VALUES (1, 100);
+INSERT INTO user_interest (user_id, interest_id) VALUES (1, 101);
+
+-- testuser2: IT/과학, 경제
+INSERT INTO user_interest (user_id, interest_id) VALUES (2, 105);
+INSERT INTO user_interest (user_id, interest_id) VALUES (2, 101);
+
+-- testuser3: 사회, 생활/문화, 세계
+INSERT INTO user_interest (user_id, interest_id) VALUES (3, 102);
+INSERT INTO user_interest (user_id, interest_id) VALUES (3, 103);
+INSERT INTO user_interest (user_id, interest_id) VALUES (3, 104);
+
+-- 뉴스 데이터 (News)
+INSERT INTO news (id, title, url, content, category, published_at) VALUES
+(1, '국회, 2025년 예산안 통과', 'https://news.example.com/politics/1', '국회는 오늘 본회의를 열어 2025년도 예산안을 통과시켰습니다. 총 예산 규모는 전년 대비 5% 증가한 600조원입니다.', '정치', DATEADD('DAY', -1, CURRENT_TIMESTAMP));
+
+INSERT INTO news (id, title, url, content, category, published_at) VALUES
+(2, '코스피, 3000선 돌파', 'https://news.example.com/economy/1', '코스피 지수가 3000선을 돌파하며 연중 최고치를 기록했습니다. 반도체 및 자동차 업종이 강세를 보였습니다.', '경제', DATEADD('HOUR', -2, CURRENT_TIMESTAMP));
+
+INSERT INTO news (id, title, url, content, category, published_at) VALUES
+(3, 'AI 챗봇, 의료 진단 정확도 95% 달성', 'https://news.example.com/tech/1', '최신 AI 챗봇이 의료 진단에서 95%의 정확도를 달성하며 의료 분야의 혁신을 이끌고 있습니다.', 'IT/과학', DATEADD('HOUR', -3, CURRENT_TIMESTAMP));
+
+INSERT INTO news (id, title, url, content, category, published_at) VALUES
+(4, '서울시, 청년 주거 지원 확대', 'https://news.example.com/society/1', '서울시가 청년들의 주거 안정을 위해 월세 지원금을 기존 20만원에서 30만원으로 확대한다고 발표했습니다.', '사회', DATEADD('HOUR', -5, CURRENT_TIMESTAMP));
+
+INSERT INTO news (id, title, url, content, category, published_at) VALUES
+(5, '메타버스 콘서트, 10만명 동시 접속', 'https://news.example.com/culture/1', '국내 유명 가수의 메타버스 콘서트가 10만명의 동시 접속자를 기록하며 새로운 공연 문화를 선보였습니다.', '생활/문화', DATEADD('HOUR', -6, CURRENT_TIMESTAMP));
+
+INSERT INTO news (id, title, url, content, category, published_at) VALUES
+(6, 'UN, 기후변화 대응 긴급 회의', 'https://news.example.com/world/1', 'UN은 기후변화 대응을 위한 긴급 회의를 소집하고 각국의 탄소 배출 감축 목표를 상향 조정할 것을 촉구했습니다.', '세계', DATEADD('HOUR', -8, CURRENT_TIMESTAMP));
+
+INSERT INTO news (id, title, url, content, category, published_at) VALUES
+(7, '양자컴퓨터, 슈퍼컴퓨터 성능 초과', 'https://news.example.com/tech/2', '구글이 개발한 양자컴퓨터가 기존 슈퍼컴퓨터보다 1000배 빠른 연산 속도를 달성했습니다.', 'IT/과학', DATEADD('HOUR', -10, CURRENT_TIMESTAMP));
+
+INSERT INTO news (id, title, url, content, category, published_at) VALUES
+(8, '반도체 수출, 역대 최고치 경신', 'https://news.example.com/economy/2', '올해 반도체 수출액이 1500억 달러를 넘어서며 역대 최고치를 경신할 것으로 전망됩니다.', '경제', DATEADD('HOUR', -12, CURRENT_TIMESTAMP));
+
+INSERT INTO news (id, title, url, content, category, published_at) VALUES
+(9, '지방선거, 투표율 70% 돌파', 'https://news.example.com/politics/2', '이번 지방선거 투표율이 70%를 돌파하며 높은 시민 참여율을 보였습니다.', '정치', DATEADD('DAY', -1, CURRENT_TIMESTAMP));
+
+INSERT INTO news (id, title, url, content, category, published_at) VALUES
+(10, '전국 미세먼지 좋음 수준', 'https://news.example.com/society/2', '전국 대부분 지역의 미세먼지 농도가 좋음 수준을 유지하고 있어 야외 활동하기 좋은 날씨입니다.', '사회', DATEADD('HOUR', -1, CURRENT_TIMESTAMP));
+
+-- 네이버 뉴스 랭킹 데이터 (NewsRanking)
+INSERT INTO news_rankings (id, section_id, press, "rank", title, url, body, collected_at) VALUES
+(1, 105, '조선일보', 1, 'ChatGPT 5.0 출시 임박, AI 시장 재편 예고', 'https://news.naver.com/main/read.naver?mode=LSD&mid=shm&sid1=105&oid=023&aid=0001001', 'OpenAI가 ChatGPT 5.0 출시를 앞두고 있다고 밝혔습니다. 새로운 버전은 멀티모달 기능이 대폭 강화되어 이미지, 음성, 텍스트를 통합 처리할 수 있습니다.', DATEADD('HOUR', -1, CURRENT_TIMESTAMP));
+
+INSERT INTO news_rankings (id, section_id, press, "rank", title, url, body, collected_at) VALUES
+(2, 105, '중앙일보', 2, '삼성전자, 3나노 GAA 공정 양산 돌입', 'https://news.naver.com/main/read.naver?mode=LSD&mid=shm&sid1=105&oid=025&aid=0002001', '삼성전자가 차세대 반도체 공정인 3나노 GAA(Gate-All-Around) 기술의 양산을 시작했습니다. 이는 TSMC와의 기술 경쟁에서 우위를 점하기 위한 전략입니다.', DATEADD('HOUR', -2, CURRENT_TIMESTAMP));
+
+INSERT INTO news_rankings (id, section_id, press, "rank", title, url, body, collected_at) VALUES
+(3, 101, '한국경제', 1, '한국은행, 기준금리 동결 결정', 'https://news.naver.com/main/read.naver?mode=LSD&mid=shm&sid1=101&oid=015&aid=0003001', '한국은행 금융통화위원회가 기준금리를 현행 3.5%로 동결하기로 결정했습니다. 인플레이션 압력과 경기 둔화 우려를 종합적으로 고려한 결과입니다.', DATEADD('HOUR', -3, CURRENT_TIMESTAMP));
+
+INSERT INTO news_rankings (id, section_id, press, "rank", title, url, body, collected_at) VALUES
+(4, 100, '연합뉴스', 1, '국회, 민생법안 처리 합의', 'https://news.naver.com/main/read.naver?mode=LSD&mid=shm&sid1=100&oid=001&aid=0004001', '여야가 민생 관련 법안 처리에 합의하며 정치적 대립을 일시적으로 봉합했습니다. 소상공인 지원법과 청년 일자리 창출법이 포함됩니다.', DATEADD('HOUR', -4, CURRENT_TIMESTAMP));
+
+INSERT INTO news_rankings (id, section_id, press, "rank", title, url, body, collected_at) VALUES
+(5, 102, '동아일보', 1, '수도권 아파트 가격 상승세 둔화', 'https://news.naver.com/main/read.naver?mode=LSD&mid=shm&sid1=102&oid=020&aid=0005001', '수도권 아파트 가격 상승세가 둔화되고 있는 것으로 나타났습니다. 금리 인상과 대출 규제 강화의 영향으로 분석됩니다.', DATEADD('HOUR', -5, CURRENT_TIMESTAMP));
+
+-- 뉴스 요약 데이터 (Summary)
+INSERT INTO summary (id, news_id, summary_text) VALUES
+(1, 1, '국회가 2025년 예산안을 통과시켰으며, 총 예산 규모는 전년 대비 5% 증가한 600조원입니다.');
+
+INSERT INTO summary (id, news_id, summary_text) VALUES
+(2, 2, '코스피 지수가 3000선을 돌파하며 연중 최고치를 기록했고, 반도체 및 자동차 업종이 강세를 보였습니다.');
+
+INSERT INTO summary (id, news_id, summary_text) VALUES
+(3, 3, '최신 AI 챗봇이 의료 진단에서 95%의 정확도를 달성하며 의료 분야 혁신을 주도하고 있습니다.');
+
+INSERT INTO summary (id, news_id, summary_text) VALUES
+(4, 4, '서울시가 청년 주거 안정을 위해 월세 지원금을 20만원에서 30만원으로 확대했습니다.');
+
+INSERT INTO summary (id, news_id, summary_text) VALUES
+(5, 5, '국내 유명 가수의 메타버스 콘서트에 10만명이 동시 접속하며 새로운 공연 문화를 선보였습니다.');
+
+INSERT INTO summary (id, news_id, summary_text) VALUES
+(6, 6, 'UN이 기후변화 대응 긴급 회의를 열고 각국에 탄소 배출 감축 목표 상향을 촉구했습니다.');
+
+INSERT INTO summary (id, news_id, summary_text) VALUES
+(7, 7, '구글의 양자컴퓨터가 기존 슈퍼컴퓨터보다 1000배 빠른 연산 속도를 달성했습니다.');
+
+INSERT INTO summary (id, news_id, summary_text) VALUES
+(8, 8, '올해 반도체 수출액이 1500억 달러를 넘어서며 역대 최고치를 경신할 전망입니다.');
+
+INSERT INTO summary (id, news_id, summary_text) VALUES
+(9, 9, '지방선거 투표율이 70%를 돌파하며 높은 시민 참여율을 기록했습니다.');
+
+INSERT INTO summary (id, news_id, summary_text) VALUES
+(10, 10, '전국 대부분 지역의 미세먼지 농도가 좋음 수준을 유지하고 있어 야외 활동하기 좋습니다.');

@@ -41,25 +41,28 @@ public class InterestServiceImpl implements InterestService {
         User user = userRepository.findByUsername(userEmail)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다: " + userEmail));
 
-        // 기존 사용자 관심사 삭제 (UserInterestRepository에 deleteByUser 메소드가 있다고 가정)
+        // 관심사 개수 검증: 정확히 3개여야 함
+        if (userInterestRequestDto.getInterestIds() == null || userInterestRequestDto.getInterestIds().size() != 3) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "관심사는 정확히 3개를 선택해야 합니다.");
+        }
+
+        // 기존 사용자 관심사 삭제
         List<UserInterest> existingUserInterests = userInterestRepository.findByUser(user);
         if (existingUserInterests != null && !existingUserInterests.isEmpty()) {
             userInterestRepository.deleteAll(existingUserInterests);
         }
 
         // 새로운 관심사 추가
-        if (userInterestRequestDto.getInterestIds() != null && !userInterestRequestDto.getInterestIds().isEmpty()) {
-            List<UserInterest> newUserInterests = userInterestRequestDto.getInterestIds().stream()
-                    .map(interestId -> {
-                        Interest interest = interestRepository.findById(interestId)
-                                .orElseThrow(() -> new CustomException(HttpStatus.BAD_REQUEST, "존재하지 않는 관심사 ID입니다: " + interestId));
-                        return UserInterest.builder()
-                                .user(user)
-                                .interest(interest)
-                                .build();
-                    })
-                    .collect(Collectors.toList());
-            userInterestRepository.saveAll(newUserInterests);
-        }
+        List<UserInterest> newUserInterests = userInterestRequestDto.getInterestIds().stream()
+                .map(interestId -> {
+                    Interest interest = interestRepository.findById(interestId)
+                            .orElseThrow(() -> new CustomException(HttpStatus.BAD_REQUEST, "존재하지 않는 관심사 ID입니다: " + interestId));
+                    return UserInterest.builder()
+                            .user(user)
+                            .interest(interest)
+                            .build();
+                })
+                .collect(Collectors.toList());
+        userInterestRepository.saveAll(newUserInterests);
     }
 } 

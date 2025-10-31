@@ -54,12 +54,12 @@ public class NewsRankingController {
     
     @GetMapping("/ranking/{id}/content")
     public ResponseEntity<ArticleContentResponse> getArticleContent(@PathVariable Long id) {
-        
+
         log.info("기사 본문 조회 요청 - id: {}", id);
-        
+
         try {
             Optional<ArticleContentResponse> content = newsRankingService.getArticleContent(id);
-            
+
             if (content.isPresent()) {
                 return ResponseEntity.ok(content.get());
             } else {
@@ -67,6 +67,20 @@ public class NewsRankingController {
             }
         } catch (Exception e) {
             log.error("기사 본문 조회 실패 - id: {}, error: {}", id, e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/ranking/global/top20")
+    public ResponseEntity<List<NewsRankingResponse>> getGlobalTop20() {
+
+        log.info("글로벌 TOP 20 랭킹 조회 요청");
+
+        try {
+            List<NewsRankingResponse> topRankings = newsRankingService.getGlobalTopRankings(20);
+            return ResponseEntity.ok(topRankings);
+        } catch (Exception e) {
+            log.error("글로벌 TOP 20 랭킹 조회 실패 - error: {}", e.getMessage());
             return ResponseEntity.internalServerError().build();
         }
     }

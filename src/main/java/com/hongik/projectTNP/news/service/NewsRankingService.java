@@ -31,14 +31,29 @@ public class NewsRankingService {
     
     @Transactional
     public void crawlAndSaveAllSections() {
+        // 2일 이전 데이터 삭제
+        deleteOldData();
+
         LocalDate today = LocalDate.now();
-        
+
         for (NewsSection section : NewsSection.values()) {
             try {
                 crawlAndSaveSection(section, today);
             } catch (Exception e) {
                 log.error("섹션 크롤링 실패 - Section: {}, Error: {}", section.getSectionName(), e.getMessage());
             }
+        }
+    }
+
+    @Transactional
+    public void deleteOldData() {
+        LocalDateTime twoDaysAgo = LocalDateTime.now().minusDays(2);
+
+        try {
+            newsRankingRepository.deleteByCollectedAtBefore(twoDaysAgo);
+            log.info("2일 이전 데이터 삭제 완료 - 기준 시간: {}", twoDaysAgo);
+        } catch (Exception e) {
+            log.error("오래된 데이터 삭제 실패: {}", e.getMessage(), e);
         }
     }
     
@@ -126,8 +141,21 @@ public class NewsRankingService {
     public List<NewsRankingResponse> getRankingsByDate(Integer sectionId, LocalDate date) {
         List<NewsRanking> rankings = newsRankingRepository
                 .findBySectionIdAndDate(sectionId, date.atStartOfDay());
-        
+
         return rankings.stream()
+                .map(NewsRankingResponse::from)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<NewsRankingResponse> getGlobalTopRankings(int limit) {
+        LocalDateTime since = LocalDateTime.now().minusHours(24);
+
+        List<NewsRanking> rankings = newsRankingRepository
+                .findGlobalTopRankings(since);
+
+        return rankings.stream()
+                .limit(limit)
                 .map(NewsRankingResponse::from)
                 .collect(Collectors.toList());
     }

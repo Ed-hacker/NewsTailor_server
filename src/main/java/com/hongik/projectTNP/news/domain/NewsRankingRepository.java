@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface NewsRankingRepository extends JpaRepository<NewsRanking, Long> {
+public interface  NewsRankingRepository extends JpaRepository<NewsRanking, Long> {
     
     Optional<NewsRanking> findByUrl(String url);
     
@@ -25,4 +25,9 @@ public interface NewsRankingRepository extends JpaRepository<NewsRanking, Long> 
     
     @Query("SELECT n FROM NewsRanking n WHERE n.sectionId = :sectionId AND DATE(n.collectedAt) = DATE(:date) ORDER BY n.rank ASC")
     List<NewsRanking> findBySectionIdAndDate(@Param("sectionId") Integer sectionId, @Param("date") LocalDateTime date);
+
+    @Query("SELECT n FROM NewsRanking n WHERE n.collectedAt >= :since ORDER BY n.rank ASC, n.collectedAt DESC")
+    List<NewsRanking> findGlobalTopRankings(@Param("since") LocalDateTime since);
+
+    void deleteByCollectedAtBefore(LocalDateTime dateTime);
 }

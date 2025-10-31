@@ -24,7 +24,7 @@ import java.util.List;        // List 사용
 
 @Slf4j
 @Service
-@Primary // @Primary 어노테이션 추가
+// @Primary // OpenAI 서비스 비활성화, Gemini 서비스가 @Primary로 설정됨
 @RequiredArgsConstructor
 public class SummaryServiceImpl implements SummaryService {
 

@@ -6,6 +6,7 @@
    - Base URL: http://localhost:8080
    - Content-Type: application/json
    - 인증 방식: JWT Bearer Token (일부 API)
+   - AWS RDS: newstailor-db.cdig6yawukx5.ap-northeast-2.rds.amazonaws.com
 
 ================================================================================
                               기존 뉴스 API
@@ -13,14 +14,14 @@
 
 1. 개인화된 뉴스 목록 조회
    GET /api/news
-   
+
    Headers:
    - Authorization: Bearer {JWT_TOKEN}
-   
+
    Query Parameters:
    - page: 페이지 번호 (기본값: 0)
    - size: 페이지 크기 (기본값: 10)
-   
+
    Response:
    {
      "content": [
@@ -41,10 +42,10 @@
 
 2. 뉴스 상세 조회
    GET /api/news/{id}
-   
+
    Headers:
    - Authorization: Bearer {JWT_TOKEN}
-   
+
    Response:
    {
      "id": 1,
@@ -62,34 +63,34 @@
 
 3. 뉴스 좋아요
    POST /api/news/{id}/like
-   
+
    Headers:
    - Authorization: Bearer {JWT_TOKEN}
-   
+
    Response: 200 OK
 
 4. 뉴스 좋아요 취소
    DELETE /api/news/{id}/like
-   
+
    Headers:
    - Authorization: Bearer {JWT_TOKEN}
-   
+
    Response: 200 OK
 
 5. 뉴스 북마크
    POST /api/news/{id}/bookmark
-   
+
    Headers:
    - Authorization: Bearer {JWT_TOKEN}
-   
+
    Response: 200 OK
 
 6. 뉴스 북마크 취소
    DELETE /api/news/{id}/bookmark
-   
+
    Headers:
    - Authorization: Bearer {JWT_TOKEN}
-   
+
    Response: 200 OK
 
 ================================================================================
@@ -98,7 +99,7 @@
 
 1. 섹션별 뉴스 랭킹 조회
    GET /api/v1/news/ranking
-   
+
    Query Parameters:
    - sectionId: 섹션 ID (필수)
      * 100: 정치
@@ -108,9 +109,9 @@
      * 104: 세계
      * 105: IT/과학
    - date: 날짜 (YYYYMMDD 형식, 필수)
-   
+
    Example: GET /api/v1/news/ranking?sectionId=105&date=20250729
-   
+
    Response:
    [
      {
@@ -137,12 +138,12 @@
 
 2. 최근 1위 뉴스 조회
    GET /api/v1/news/ranking/top
-   
+
    Query Parameters:
    - limit: 조회할 기사 수 (기본값: 20, 최대 100)
-   
+
    Example: GET /api/v1/news/ranking/top?limit=5
-   
+
    Response:
    [
      {
@@ -157,9 +158,44 @@
      }
    ]
 
-3. 특정 기사 본문 조회
+3. 글로벌 TOP 20 랭킹 조회 (NEW!)
+   GET /api/v1/news/ranking/global/top20
+
+   설명:
+   - 모든 카테고리에서 rank 낮은 순으로 최근 24시간 내 20개 반환
+   - 카테고리 무관, 핫한 뉴스 TOP 20
+
+   Example: GET /api/v1/news/ranking/global/top20
+
+   Response:
+   [
+     {
+       "id": 12,
+       "sectionId": 100,
+       "press": "연합뉴스",
+       "rank": 1,
+       "title": "정치 1위 기사",
+       "url": "https://news.naver.com/...",
+       "body": "기사 본문...",
+       "collectedAt": "2025-10-31T15:05:00"
+     },
+     {
+       "id": 45,
+       "sectionId": 101,
+       "press": "한국경제",
+       "rank": 1,
+       "title": "경제 1위 기사",
+       "url": "https://news.naver.com/...",
+       "body": "기사 본문...",
+       "collectedAt": "2025-10-31T15:05:00"
+     },
+     ...
+     (총 20개)
+   ]
+
+4. 특정 기사 본문 조회
    GET /api/v1/news/ranking/{id}/content
-   
+
    Response:
    {
      "id": 1,
@@ -169,39 +205,93 @@
    }
 
 ================================================================================
+                        요약 뉴스 API (NEW!)
+================================================================================
+
+1. 사용자 맞춤 요약 뉴스 조회 (페이징)
+   GET /api/v1/summary-news?page={0-3}
+
+   Headers:
+   - Authorization: Bearer {JWT_TOKEN} (필수)
+
+   Query Parameters:
+   - page: 페이지 번호 (0~3, 기본값: 0)
+
+   설명:
+   - 사용자가 선택한 3개 관심사별로 Gemini AI가 선별한 4개씩 = 총 12개
+   - 각 페이지당 3개 (각 카테고리 1개씩)
+   - page 0: 각 카테고리의 1번째 뉴스 3개
+   - page 1: 각 카테고리의 2번째 뉴스 3개
+   - page 2: 각 카테고리의 3번째 뉴스 3개
+   - page 3: 각 카테고리의 4번째 뉴스 3개
+
+   Example: GET /api/v1/summary-news?page=0
+
+   Response:
+   [
+     {
+       "sectionId": 100,
+       "sectionName": "정치",
+       "title": "정치 카테고리 핵심 뉴스 1",
+       "url": "https://news.naver.com/...",
+       "summary": "Gemini AI가 생성한 3문장 이내 요약 내용입니다. 주요 포인트 1. 주요 포인트 2. 주요 포인트 3."
+     },
+     {
+       "sectionId": 101,
+       "sectionName": "경제",
+       "title": "경제 카테고리 핵심 뉴스 1",
+       "url": "https://news.naver.com/...",
+       "summary": "Gemini AI가 생성한 3문장 이내 요약 내용입니다. 경제 동향 분석. 시장 전망."
+     },
+     {
+       "sectionId": 105,
+       "sectionName": "IT/과학",
+       "title": "IT 카테고리 핵심 뉴스 1",
+       "url": "https://news.naver.com/...",
+       "summary": "Gemini AI가 생성한 3문장 이내 요약 내용입니다. 기술 혁신. 미래 전망."
+     }
+   ]
+
+   에러 응답:
+   - 400 Bad Request: 페이지 범위 초과 (0~3만 허용)
+   - 400 Bad Request: 관심사가 3개로 설정되지 않음
+   - 401 Unauthorized: 인증 토큰 없음
+
+================================================================================
                               인증 API
 ================================================================================
 
 1. 회원가입
    POST /api/signup
-   
+
    Request Body:
    {
      "username": "testuser",
      "password": "password123!",
      "nickname": "홍길동",
-     "interestIds": [1, 2, 3]
+     "interestIds": [100, 101, 102]
    }
-   
+
    Validation Rules:
    - username: 4~20자, 필수
    - password: 8~20자, 영문+숫자+특수문자 각 1개 이상, 필수
    - nickname: 2~10자, 필수
-   - interestIds: 관심사 ID 배열, 선택사항
-   
+   - interestIds: 관심사 ID 배열 (100~105), 선택사항 (회원가입 시)
+     * 100: 정치, 101: 경제, 102: 사회, 103: 생활/문화, 104: 세계, 105: IT/과학
+
    Response:
    201 Created
    "회원가입 성공"
 
 2. 로그인
    POST /api/login
-   
+
    Request Body:
    {
      "username": "testuser",
      "password": "password123!"
    }
-   
+
    Response:
    {
      "accessToken": "eyJhbGciOiJIUzI1NiJ9...",
@@ -210,18 +300,18 @@
 
 3. 아이디 중복 체크
    GET /api/auth/check-username?username={username}
-   
+
    Query Parameters:
    - username: 체크할 사용자명 (4~20자)
-   
+
    Response:
    {
      "available": true,
      "message": "사용 가능한 아이디입니다."
    }
-   
+
    또는
-   
+
    {
      "available": false,
      "message": "이미 사용 중인 아이디입니다."
@@ -233,31 +323,63 @@
 
 1. 사용 가능한 관심사 목록 조회
    GET /api/interests
-   
+
    Response:
    [
      {
-       "id": 1,
-       "name": "기술"
+       "id": 100,
+       "name": "정치"
      },
      {
-       "id": 2,
+       "id": 101,
        "name": "경제"
+     },
+     {
+       "id": 102,
+       "name": "사회"
+     },
+     {
+       "id": 103,
+       "name": "생활/문화"
+     },
+     {
+       "id": 104,
+       "name": "세계"
+     },
+     {
+       "id": 105,
+       "name": "IT/과학"
      }
    ]
 
-2. 사용자 관심사 설정
+2. 사용자 관심사 설정 (UPDATED!)
    POST /api/user/interests
-   
+
    Headers:
    - Authorization: Bearer {JWT_TOKEN}
-   
+
    Request Body:
    {
-     "interestIds": [1, 2, 3]
+     "interestIds": [100, 101, 105]
    }
-   
-   Response: 200 OK
+
+   ⚠️ 중요: 정확히 3개의 관심사만 선택 가능
+
+   Validation:
+   - interestIds는 null이 아니어야 함
+   - 정확히 3개의 ID만 허용 (3개 미만 또는 초과 시 400 에러)
+   - ID는 100~105 범위 내 유효한 관심사 ID여야 함
+
+   성공 응답:
+   200 OK
+   "관심사 등록 성공"
+
+   에러 응답:
+   400 Bad Request
+   {
+     "status": 400,
+     "message": "관심사는 정확히 3개를 선택해야 합니다."
+   }
 
 ================================================================================
                            에러 응답 형식
@@ -266,7 +388,7 @@
 HTTP Status Code와 함께 다음 형식의 에러 응답이 반환됩니다:
 
 {
-  "timestamp": "2025-07-29T15:30:00.123+09:00",
+  "timestamp": "2025-10-31T15:30:00.123+09:00",
   "status": 404,
   "error": "Not Found",
   "message": "뉴스를 찾을 수 없습니다: 999",
@@ -275,6 +397,7 @@ HTTP Status Code와 함께 다음 형식의 에러 응답이 반환됩니다:
 
 주요 에러 코드:
 - 400 Bad Request: 잘못된 요청 파라미터, Validation 오류
+  * 예시: "관심사는 정확히 3개를 선택해야 합니다."
   * 예시: "아이디는 4~20자 사이여야 합니다., 비밀번호는 영문, 숫자, 특수문자를 각각 최소 1개씩 포함해야 합니다."
 - 401 Unauthorized: 인증 토큰이 없거나 유효하지 않음
 - 403 Forbidden: 권한 부족
@@ -296,26 +419,70 @@ Validation 에러 응답 예시:
 - 크롤링 대상: 모든 섹션 (정치, 경제, 사회, 생활/문화, 세계, IT/과학)
 - 중복 방지: URL 기준으로 중복 기사 저장 방지
 - 본문 크롤링: 각 기사별 본문 내용 수집
-- 지연 처리: 기사별 1초 지연으로 서버 부하 방지
+- 자동 삭제: 2일 이전 데이터 자동 삭제 (스토리지 비용 절감)
+
+데이터 보관 정책:
+- 최근 2일치 데이터만 유지
+- 크롤링 시작 전 자동으로 2일 이전 데이터 삭제
+- 예상 데이터량: 약 150~200 MB (2일치)
 
 ================================================================================
                             데이터베이스
 ================================================================================
 
+AWS RDS (MySQL):
+- Endpoint: newstailor-db.cdig6yawukx5.ap-northeast-2.rds.amazonaws.com
+- Database: newstailor_db
+- Region: ap-northeast-2 (서울)
+
 주요 테이블:
 1. users: 사용자 정보 (username, password, nickname)
 2. news: 기존 뉴스 데이터
-3. news_rankings: 네이버 뉴스 랭킹 데이터 (신규)
-4. interests: 관심사 정보
-5. user_interest: 사용자-관심사 연결
+3. news_rankings: 네이버 뉴스 랭킹 데이터 (2일치만 보관)
+4. interests: 관심사 정보 (ID: 100~105)
+5. user_interest: 사용자-관심사 연결 (정확히 3개)
 6. article_like: 뉴스 좋아요
 7. bookmark: 뉴스 북마크
-8. summary: 뉴스 요약 (OpenAI GPT 연동)
+8. summary: 뉴스 요약 (Gemini API 연동)
 
 변경사항:
 - users 테이블에서 email 필드 완전 제거
 - 사용자 식별은 username으로만 처리
 - 회원가입 시 관심사 동시 설정 가능
+- 관심사는 정확히 3개만 허용
 - TTS 관련 테이블 및 API 제거 (프론트엔드에서 구현)
+- H2 Database 제거 (AWS RDS MySQL만 사용)
+
+================================================================================
+                              AI 요약 기능
+================================================================================
+
+Gemini API 사용:
+- 모델: gemini-1.5-flash
+- 개별 뉴스 요약: 3문장 이내
+- 배치 선별 요약: 카테고리별 많은 뉴스 중 중요한 4개 선별 + 각각 3문장 요약
+
+요약 뉴스 생성 프로세스:
+1. 사용자의 3개 관심사 확인
+2. 각 카테고리의 최근 24시간 내 모든 뉴스 수집
+3. Gemini API에 뉴스 목록 전달
+4. Gemini가 각 카테고리당 중요한 4개 선택 + 요약
+5. 총 12개 요약 뉴스 반환 (3개 카테고리 × 4개)
+6. 페이징: 4페이지 (각 페이지 3개)
+
+================================================================================
+                            테스트 계정
+================================================================================
+
+테스트 사용자:
+- Username: testuser1
+- Password: password123!
+- 관심사: 정치(100), 경제(101), IT/과학(105)
+
+사용 예시:
+1. 로그인: POST /api/login
+2. 관심사 설정: POST /api/user/interests (3개 필수)
+3. 글로벌 TOP 20: GET /api/v1/news/ranking/global/top20
+4. 요약 뉴스 조회: GET /api/v1/summary-news?page=0
 
 ================================================================================
