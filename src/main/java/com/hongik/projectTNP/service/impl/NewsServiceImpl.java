@@ -71,7 +71,8 @@ public class NewsServiceImpl implements NewsService {
         // TODO: Summary가 null일 경우 SummaryService.summarizeNews(news) 호출하여 생성하는 로직 고려
 
         boolean isLiked = articleLikeRepository.existsByUserAndNews(user, news);
-        boolean isBookmarked = bookmarkRepository.existsByUserAndNews(user, news);
+        // 랭킹 뉴스는 북마크 불가 (요약 뉴스만 북마크 가능)
+        boolean isBookmarked = false;
         long likeCount = articleLikeRepository.countByNews(news);
 
         return NewsDetailResponseDto.from(news, summary, isLiked, isBookmarked, likeCount);
@@ -106,25 +107,14 @@ public class NewsServiceImpl implements NewsService {
     @Override
     @Transactional
     public void bookmarkArticle(Long newsId, String userEmail) {
-        User user = userRepository.findByUsername(userEmail)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다: " + userEmail));
-        News news = newsRepository.findById(newsId)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "뉴스를 찾을 수 없습니다: " + newsId));
-
-        if (!bookmarkRepository.existsByUserAndNews(user, news)) {
-            Bookmark bookmark = Bookmark.builder().user(user).news(news).build();
-            bookmarkRepository.save(bookmark);
-        }
+        // 랭킹 뉴스는 북마크 불가 (요약 뉴스만 북마크 가능)
+        throw new CustomException(HttpStatus.BAD_REQUEST, "랭킹 뉴스는 북마크할 수 없습니다. 요약 뉴스만 북마크 가능합니다.");
     }
 
     @Override
     @Transactional
     public void unbookmarkArticle(Long newsId, String userEmail) {
-        User user = userRepository.findByUsername(userEmail)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다: " + userEmail));
-        News news = newsRepository.findById(newsId)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "뉴스를 찾을 수 없습니다: " + newsId));
-        bookmarkRepository.findByUserAndNews(user, news)
-                .ifPresent(bookmarkRepository::delete);
+        // 랭킹 뉴스는 북마크 불가 (요약 뉴스만 북마크 가능)
+        throw new CustomException(HttpStatus.BAD_REQUEST, "랭킹 뉴스는 북마크할 수 없습니다.");
     }
 } 

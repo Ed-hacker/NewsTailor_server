@@ -202,9 +202,9 @@ public class NewsSelectionService {
 
                 log.info("섹션 {} ({}) 요약 뉴스 생성 시작", sectionName, sectionId);
 
-                // 1. 해당 섹션의 기존 캐시 삭제
-                summaryNewsCacheRepository.deleteBySectionId(sectionId);
-                log.debug("섹션 {} 기존 캐시 삭제 완료", sectionName);
+                // 1. 해당 섹션의 기존 캐시 삭제 (북마크된 뉴스는 제외)
+                summaryNewsCacheRepository.deleteNonBookmarkedBySectionId(sectionId);
+                log.debug("섹션 {} 기존 캐시 삭제 완료 (북마크 제외)", sectionName);
 
                 // 2. Gemini를 통해 4개 선별 및 요약
                 List<SummaryNewsDto> summaries = selectAndSummarizeTop4(sectionId);

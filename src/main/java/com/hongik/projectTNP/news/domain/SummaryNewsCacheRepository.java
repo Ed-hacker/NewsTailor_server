@@ -1,6 +1,7 @@
 package com.hongik.projectTNP.news.domain;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -23,4 +24,13 @@ public interface SummaryNewsCacheRepository extends JpaRepository<SummaryNewsCac
 
     // 특정 섹션의 모든 데이터 삭제
     void deleteBySectionId(Integer sectionId);
+
+    // 특정 섹션의 북마크되지 않은 요약 뉴스만 삭제
+    @Modifying
+    @Query("DELETE FROM SummaryNewsCache s WHERE s.sectionId = :sectionId " +
+           "AND s.id NOT IN (SELECT b.summaryNewsCache.id FROM Bookmark b)")
+    void deleteNonBookmarkedBySectionId(@Param("sectionId") Integer sectionId);
+
+    // 특정 섹션의 데이터 조회
+    List<SummaryNewsCache> findBySectionId(Integer sectionId);
 }

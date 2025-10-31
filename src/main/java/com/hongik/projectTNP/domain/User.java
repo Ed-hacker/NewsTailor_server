@@ -36,4 +36,9 @@ public class User {
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
     }
+
+    // 비즈니스 메소드
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+    }
 } 
