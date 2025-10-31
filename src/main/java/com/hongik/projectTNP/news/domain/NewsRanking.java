@@ -43,10 +43,14 @@ public class NewsRanking {
     @Lob
     @Column(columnDefinition = "TEXT")
     private String body;
-    
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String summary;  // Gemini가 생성한 요약
+
     @Column(nullable = false)
     private LocalDateTime collectedAt;
-    
+
     @PrePersist
     protected void onCreate() {
         collectedAt = LocalDateTime.now();

@@ -24,10 +24,11 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class NewsRankingService {
-    
+
     private final NewsRankingRepository newsRankingRepository;
     private final NaverRankingCrawler naverRankingCrawler;
     private final ArticleContentCrawler articleContentCrawler;
+    private final com.hongik.projectTNP.service.SummaryService summaryService;
     
     @Transactional
     public void crawlAndSaveAllSections() {
@@ -75,7 +76,16 @@ public class NewsRankingService {
                 
                 // 본문 크롤링
                 String body = articleContentCrawler.extractArticleContent(rawArticle.getUrl());
-                
+
+                // Gemini로 요약 생성
+                String summary = null;
+                try {
+                    summary = summaryService.generateSummary(body);
+                    log.debug("요약 생성 완료 - Title: {}", rawArticle.getTitle());
+                } catch (Exception e) {
+                    log.error("요약 생성 실패 - Title: {}, Error: {}", rawArticle.getTitle(), e.getMessage());
+                }
+
                 // 엔티티 생성 및 저장
                 NewsRanking newsRanking = NewsRanking.builder()
                         .sectionId(rawArticle.getSectionId())
@@ -84,8 +94,9 @@ public class NewsRankingService {
                         .title(rawArticle.getTitle())
                         .url(rawArticle.getUrl())
                         .body(body)
+                        .summary(summary)
                         .build();
-                
+
                 newsRankingRepository.save(newsRanking);
                 savedCount++;
                 
