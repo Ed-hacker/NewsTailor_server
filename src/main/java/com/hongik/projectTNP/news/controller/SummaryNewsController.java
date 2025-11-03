@@ -39,7 +39,7 @@ public class SummaryNewsController {
     @GetMapping
     public ResponseEntity<List<SummaryNewsDto>> getPersonalizedSummaryNews(
             @AuthenticationPrincipal UserDetails userDetails,
-            @RequestParam(defaultValue = "0") int page) {
+            @RequestParam(value = "page", defaultValue = "0") int page) {
 
         String username = userDetails.getUsername();
         log.info("요약 뉴스 조회 요청 - 사용자: {}, 페이지: {}", username, page);

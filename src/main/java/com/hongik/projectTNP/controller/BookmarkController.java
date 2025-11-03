@@ -23,7 +23,7 @@ public class BookmarkController {
     @PostMapping
     public ResponseEntity<String> addBookmark(
             Authentication authentication,
-            @RequestParam Long summaryNewsCacheId) {
+            @RequestParam(value = "summaryNewsCacheId") Long summaryNewsCacheId) {
         String username = authentication.getName();
         bookmarkService.addBookmark(username, summaryNewsCacheId);
         return ResponseEntity.ok("북마크가 추가되었습니다.");
@@ -36,7 +36,7 @@ public class BookmarkController {
     @DeleteMapping
     public ResponseEntity<String> removeBookmark(
             Authentication authentication,
-            @RequestParam Long summaryNewsCacheId) {
+            @RequestParam(value = "summaryNewsCacheId") Long summaryNewsCacheId) {
         String username = authentication.getName();
         bookmarkService.removeBookmark(username, summaryNewsCacheId);
         return ResponseEntity.ok("북마크가 삭제되었습니다.");

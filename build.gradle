@@ -61,7 +61,7 @@ tasks.named('test') {
 
 // 빌드 설정
 tasks.withType(JavaCompile) {
-    options.compilerArgs = ['-Xlint:none']
+    options.compilerArgs = ['-Xlint:none', '-parameters']
     options.fork = true
     options.incremental = true
 }
