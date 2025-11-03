@@ -80,6 +80,7 @@ public class GeminiSummaryService implements SummaryService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("x-goog-api-key", geminiApiKey);
 
         String prompt = "다음 뉴스 기사를 한국어로 3문장 이내로 요약해주세요:\n\n" + text;
 
@@ -87,8 +88,7 @@ public class GeminiSummaryService implements SummaryService {
         HttpEntity<GeminiRequest> entity = new HttpEntity<>(requestBody, headers);
 
         try {
-            String urlWithKey = geminiApiUrl + "?key=" + geminiApiKey;
-            ResponseEntity<GeminiResponse> response = restTemplate.postForEntity(urlWithKey, entity, GeminiResponse.class);
+            ResponseEntity<GeminiResponse> response = restTemplate.postForEntity(geminiApiUrl, entity, GeminiResponse.class);
 
             if (response.getBody() != null &&
                 response.getBody().getCandidates() != null &&
@@ -112,6 +112,8 @@ public class GeminiSummaryService implements SummaryService {
     private static class GeminiRequest {
         private List<Content> contents;
 
+        public GeminiRequest() {}
+
         public GeminiRequest(String text) {
             Part part = new Part(text);
             Content content = new Content(Collections.singletonList(part));
@@ -119,26 +121,33 @@ public class GeminiSummaryService implements SummaryService {
         }
 
         public List<Content> getContents() { return contents; }
+        public void setContents(List<Content> contents) { this.contents = contents; }
     }
 
     private static class Content {
         private List<Part> parts;
+
+        public Content() {}
 
         public Content(List<Part> parts) {
             this.parts = parts;
         }
 
         public List<Part> getParts() { return parts; }
+        public void setParts(List<Part> parts) { this.parts = parts; }
     }
 
     private static class Part {
         private String text;
+
+        public Part() {}
 
         public Part(String text) {
             this.text = text;
         }
 
         public String getText() { return text; }
+        public void setText(String text) { this.text = text; }
     }
 
     private static class GeminiResponse {

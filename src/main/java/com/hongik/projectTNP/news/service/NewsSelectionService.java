@@ -102,13 +102,13 @@ public class NewsSelectionService {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("x-goog-api-key", geminiApiKey);
 
             GeminiRequest requestBody = new GeminiRequest(prompt);
             HttpEntity<GeminiRequest> entity = new HttpEntity<>(requestBody, headers);
 
-            String urlWithKey = geminiApiUrl + "?key=" + geminiApiKey;
             ResponseEntity<GeminiResponse> response = restTemplate.postForEntity(
-                    urlWithKey,
+                    geminiApiUrl,
                     entity,
                     GeminiResponse.class
             );
@@ -252,6 +252,8 @@ public class NewsSelectionService {
     private static class GeminiRequest {
         private List<Content> contents;
 
+        public GeminiRequest() {}
+
         public GeminiRequest(String text) {
             Part part = new Part(text);
             Content content = new Content(Collections.singletonList(part));
@@ -261,10 +263,16 @@ public class NewsSelectionService {
         public List<Content> getContents() {
             return contents;
         }
+
+        public void setContents(List<Content> contents) {
+            this.contents = contents;
+        }
     }
 
     private static class Content {
         private List<Part> parts;
+
+        public Content() {}
 
         public Content(List<Part> parts) {
             this.parts = parts;
@@ -273,10 +281,16 @@ public class NewsSelectionService {
         public List<Part> getParts() {
             return parts;
         }
+
+        public void setParts(List<Part> parts) {
+            this.parts = parts;
+        }
     }
 
     private static class Part {
         private String text;
+
+        public Part() {}
 
         public Part(String text) {
             this.text = text;
@@ -284,6 +298,10 @@ public class NewsSelectionService {
 
         public String getText() {
             return text;
+        }
+
+        public void setText(String text) {
+            this.text = text;
         }
     }
 
