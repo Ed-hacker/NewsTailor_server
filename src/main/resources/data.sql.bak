@@ -64,7 +64,7 @@ INSERT INTO news (id, title, url, content, category, published_at) VALUES
 
 -- 네이버 뉴스 랭킹 데이터 (NewsRanking)
 INSERT INTO news_rankings (id, section_id, press, "rank", title, url, body, collected_at) VALUES
-(1, 105, '조선일보', 1, 'ChatGPT 5.0 출시 임박, AI 시장 재편 예고', 'https://news.naver.com/main/read.naver?mode=LSD&mid=shm&sid1=105&oid=023&aid=0001001', 'OpenAI가 ChatGPT 5.0 출시를 앞두고 있다고 밝혔습니다. 새로운 버전은 멀티모달 기능이 대폭 강화되어 이미지, 음성, 텍스트를 통합 처리할 수 있습니다.', DATEADD('HOUR', -1, CURRENT_TIMESTAMP));
+(1, 105, '조선일보', 1, 'AI 언어모델 기술 발전, 시장 재편 예고', 'https://news.naver.com/main/read.naver?mode=LSD&mid=shm&sid1=105&oid=023&aid=0001001', 'AI 언어모델 기술이 빠르게 발전하고 있습니다. 새로운 버전은 멀티모달 기능이 대폭 강화되어 이미지, 음성, 텍스트를 통합 처리할 수 있습니다.', DATEADD('HOUR', -1, CURRENT_TIMESTAMP));
 
 INSERT INTO news_rankings (id, section_id, press, "rank", title, url, body, collected_at) VALUES
 (2, 105, '중앙일보', 2, '삼성전자, 3나노 GAA 공정 양산 돌입', 'https://news.naver.com/main/read.naver?mode=LSD&mid=shm&sid1=105&oid=025&aid=0002001', '삼성전자가 차세대 반도체 공정인 3나노 GAA(Gate-All-Around) 기술의 양산을 시작했습니다. 이는 TSMC와의 기술 경쟁에서 우위를 점하기 위한 전략입니다.', DATEADD('HOUR', -2, CURRENT_TIMESTAMP));

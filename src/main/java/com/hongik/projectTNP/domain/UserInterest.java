@@ -26,4 +26,4 @@ public class UserInterest {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "interest_id", nullable = false)
     private Interest interest;
-} 
+}

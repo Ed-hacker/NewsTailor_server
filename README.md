@@ -9,8 +9,8 @@
 - 선택된 관심사에 따른 개인화 뉴스 목록 제공 (페이징 지원)
 - 뉴스 기사 상세 조회
 - 뉴스 기사 좋아요 및 북마크 기능
-- News API를 활용한 주기적인 뉴스 크롤링 및 저장 (Jsoup 연동 예정)
-- OpenAI API를 활용한 뉴스 기사 요약 (API 키 필요)
+- 네이버 뉴스 크롤링 및 저장 (Jsoup 연동)
+- Google Gemini API를 활용한 뉴스 기사 요약
 - Amazon Polly 및 S3를 활용한 요약 텍스트 음성 변환(TTS) 및 오디오 파일 제공 (현재 API 키 문제로 임시 비활성화)
 
 ## 기술 스택
@@ -21,11 +21,11 @@
 - **데이터베이스**: MySQL 8.x (로컬 환경) / H2 (테스트용 프로필 지원 가능)
 - **인증**: JWT (JSON Web Token)
 - **외부 API**:
-    - NewsAPI (뉴스 수집용)
-    - OpenAI API (기사 요약용)
+    - 네이버 뉴스 (뉴스 크롤링)
+    - Google Gemini API (기사 요약용)
     - AWS Polly (TTS 변환용, 현재 임시 비활성화)
     - AWS S3 (오디오 파일 저장용, 현재 임시 비활성화)
-- **기타 라이브러리**: Lombok, Jsoup (예정), AWS SDK v2 for Java
+- **기타 라이브러리**: Lombok, Jsoup, AWS SDK v2 for Java
 
 **참고:** AWS 관련 기능(Polly TTS, S3 업로드)은 현재 코드 상에서 임시 비활성화되어 있어, `cloud.aws` 관련 키들이 없어도 애플리케이션의 기본 기능(회원가입, 로그인, 뉴스 조회 등)은 실행 및 테스트 가능합니다.
 
@@ -71,8 +71,8 @@ Postman을 사용하여 API를 테스트할 수 있습니다. 관련 Postman Col
 
 
 ## 향후 개선 사항
-- Jsoup을 이용한 뉴스 기사 본문 크롤링 기능 완성
-- OpenAI, AWS Polly/S3 연동 활성화 및 실제 API 키를 사용한 기능 구현
+- AWS Polly/S3 연동 활성화 및 실제 API 키를 사용한 기능 구현
 - 테스트 코드 작성 (단위 테스트, 통합 테스트)
 - Dockerfile 및 docker-compose.yml을 통한 배포 환경 구성
 - 프론트엔드 애플리케이션 연동
+- 성능 최적화 및 캐싱 전략 개선
