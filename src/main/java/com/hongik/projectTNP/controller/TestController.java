@@ -1,14 +1,17 @@
 package com.hongik.projectTNP.controller;
 
 import com.hongik.projectTNP.news.dto.SummaryNewsDto;
+import com.hongik.projectTNP.news.service.NewsRankingService;
 import com.hongik.projectTNP.news.service.NewsSelectionService;
 import com.hongik.projectTNP.service.SummaryService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/test")
 @RequiredArgsConstructor
@@ -16,6 +19,7 @@ public class TestController {
 
     private final SummaryService summaryService;
     private final NewsSelectionService newsSelectionService;
+    private final NewsRankingService newsRankingService;
 
     @PostMapping("/summary")
     public ResponseEntity<String> testSummary(@RequestBody String text) {
@@ -55,6 +59,40 @@ public class TestController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
                     .body("생성 실패: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 전체 프로세스 실행: 크롤링 → 요약 → 캐시 저장
+     * DB가 비어있어도 이 API 한번 호출하면 모든 데이터가 준비됩니다.
+     * POST /api/test/full-process
+     */
+    @PostMapping("/full-process")
+    public ResponseEntity<String> runFullProcess() {
+        log.info("===== 전체 프로세스 시작 (크롤링 + 요약 + 캐시) =====");
+
+        try {
+            // 1. 랭킹 뉴스 크롤링
+            log.info("1단계: 랭킹 뉴스 크롤링 시작");
+            newsRankingService.crawlAndSaveAllSections();
+            log.info("1단계: 랭킹 뉴스 크롤링 완료");
+
+            // 2. 요약 뉴스 생성 및 캐시
+            log.info("2단계: 요약 뉴스 생성 및 캐시 시작");
+            newsSelectionService.generateAndCacheAllSections();
+            log.info("2단계: 요약 뉴스 생성 및 캐시 완료");
+
+            log.info("===== 전체 프로세스 완료 =====");
+            return ResponseEntity.ok(
+                "✅ 전체 프로세스 완료!\n" +
+                "1. 랭킹 뉴스 크롤링 완료\n" +
+                "2. 요약 뉴스 생성 및 캐시 저장 완료\n" +
+                "이제 맞춤 요약 뉴스 API를 사용할 수 있습니다."
+            );
+        } catch (Exception e) {
+            log.error("전체 프로세스 실패: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError()
+                    .body("❌ 전체 프로세스 실패: " + e.getMessage());
         }
     }
 }

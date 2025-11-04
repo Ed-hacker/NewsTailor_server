@@ -610,8 +610,89 @@ Gemini API 사용:
 7. 북마크 추가: POST /api/bookmark?summaryNewsCacheId=123
 8. 북마크 목록: GET /api/bookmark
 
-테스트 엔드포인트:
-1. Gemini 연결 테스트: GET /api/test/gemini?sectionId=104
-2. 전체 생성 테스트: POST /api/test/generate-all
+================================================================================
+                           테스트 API
+================================================================================
+
+⚠️ 주의: 테스트 API는 인증 없이 사용 가능 (개발/테스트 환경용)
+
+1. Gemini 연결 테스트
+   GET /api/test/gemini?sectionId={sectionId}
+
+   설명:
+   - 특정 섹션의 뉴스를 Gemini로 선별하고 요약
+   - 캐시에 저장하지 않음 (테스트용)
+
+   Query Parameters:
+   - sectionId: 섹션 ID (기본값: 100)
+     * 100: 정치
+     * 101: 경제
+     * 102: 사회
+     * 103: 생활/문화
+     * 104: 세계
+     * 105: IT/과학
+
+   Example: GET /api/test/gemini?sectionId=105
+
+   Response:
+   [
+     {
+       "sectionId": 105,
+       "sectionName": "IT/과학",
+       "title": "AI 기술 발전...",
+       "url": "https://news.naver.com/...",
+       "summary": "Gemini 요약 내용..."
+     }
+   ]
+
+2. 텍스트 요약 테스트
+   POST /api/test/summary
+   Content-Type: text/plain
+
+   설명:
+   - 임의의 텍스트를 Gemini로 요약
+
+   Request Body: (plain text)
+   긴 텍스트 내용...
+
+   Response: (text/plain)
+   요약된 내용
+
+3. 요약 뉴스 생성 테스트
+   POST /api/test/generate-all
+
+   설명:
+   - 모든 카테고리의 요약 뉴스를 생성하고 캐시에 저장
+   - DB에 랭킹 뉴스가 있어야 함
+   - 6개 카테고리 × 각 4개 = 총 24개 요약 생성
+
+   Example: POST /api/test/generate-all
+
+   Response: (text/plain)
+   전체 섹션 요약 뉴스 생성 완료
+
+4. 전체 프로세스 실행 (크롤링 + 요약 + 캐시)
+   POST /api/test/full-process
+
+   설명:
+   - DB가 비어있어도 이 API 한번으로 모든 데이터 준비 완료
+   - 1단계: 네이버 랭킹 뉴스 크롤링 (6개 카테고리)
+   - 2단계: Gemini AI 요약 뉴스 생성 및 캐시 저장
+   - 완료 후 바로 맞춤 요약 뉴스 API 사용 가능
+
+   ⏱️ 예상 소요 시간: 3-5분
+
+   Example: POST /api/test/full-process
+
+   Response: (text/plain)
+   ✅ 전체 프로세스 완료!
+   1. 랭킹 뉴스 크롤링 완료
+   2. 요약 뉴스 생성 및 캐시 저장 완료
+   이제 맞춤 요약 뉴스 API를 사용할 수 있습니다.
+
+   실행 과정:
+   1. news_rankings 테이블: 최신 랭킹 뉴스 저장 (각 카테고리 약 20개)
+   2. summary_news_cache 테이블: 요약 뉴스 저장 (각 카테고리 4개 × 6 = 24개)
+   3. 모든 사용자가 관심사에 맞는 맞춤 뉴스 수신 가능
 
 ================================================================================
