@@ -16,12 +16,12 @@ public class SummaryNewsScheduler {
     private final NewsSelectionService newsSelectionService;
 
     /**
-     * 하루 3번 요약 뉴스 생성 (08:00, 13:00, 20:00)
+     * 하루 3번 요약 뉴스 생성 (06:00, 11:00, 17:00)
      * 1. 최신 랭킹 뉴스 크롤링
      * 2. 요약 뉴스 생성 및 캐시
      * cron: 초 분 시 일 월 요일
      */
-    @Scheduled(cron = "0 0 8,13,20 * * *")
+    @Scheduled(cron = "0 0 6,11,17 * * *")
     public void generateSummaryNews() {
         log.info("===== 요약 뉴스 스케줄 시작 =====");
 
