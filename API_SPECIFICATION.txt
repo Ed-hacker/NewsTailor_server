@@ -21,8 +21,9 @@
    - 모든 카테고리에서 rank 낮은 순으로 최근 24시간 내 20개 반환
    - 각 섹션의 1위 뉴스들을 모아서 표시 (핫한 뉴스 TOP 20)
    - 크롤링 소스: https://news.naver.com/main/ranking/popularDay.naver
-   - Gemini AI가 자동으로 생성한 요약 포함
-   - 하루 3번 (08:00, 13:00, 20:00) 자동 갱신
+   - Gemini AI가 자동으로 생성한 요약 포함 (본문은 저장하지 않음)
+   - 하루 3번 (06:00, 11:00, 17:00) 자동 갱신
+   - 프로세스: 본문 크롤링 → Gemini 요약 생성 → 본문 폐기 → 요약만 DB 저장
 
    Example: GET /api/v1/news/ranking
 
@@ -35,7 +36,6 @@
        "rank": 1,
        "title": "정치 1위 기사",
        "url": "https://news.naver.com/...",
-       "body": "기사 본문 전체...",
        "summary": "Gemini가 생성한 3문장 이내 요약입니다. 핵심 내용 1. 핵심 내용 2. 핵심 내용 3.",
        "collectedAt": "2025-10-31T15:05:00"
      },
@@ -46,13 +46,16 @@
        "rank": 1,
        "title": "경제 1위 기사",
        "url": "https://news.naver.com/...",
-       "body": "기사 본문 전체...",
        "summary": "Gemini가 생성한 3문장 이내 요약입니다. 경제 동향 분석. 시장 전망.",
        "collectedAt": "2025-10-31T15:05:00"
      },
      ...
      (총 20개)
    ]
+
+   참고:
+   - body 필드는 제거됨 (본문은 DB에 저장하지 않음)
+   - summary만 반환 (앱에서는 요약만 표시)
 
 ================================================================================
                         요약 뉴스 API (캐시 기반)
@@ -472,13 +475,13 @@ Validation 에러 응답 예시:
 ================================================================================
 
 통합 스케줄러 (SummaryNewsScheduler):
-- 실행 주기: 하루 3번 (08:00, 13:00, 20:00)
+- 실행 주기: 하루 3번 (06:00, 11:00, 17:00)
 - 실행 내용:
   1. 랭킹 뉴스 크롤링 (https://news.naver.com/main/ranking/popularDay.naver)
      - 모든 섹션 (정치, 경제, 사회, 생활/문화, 세계, IT/과학)
      - URL 기준 중복 방지
-     - 본문 내용 수집
-     - Gemini AI로 각 기사 요약 생성 (3문장 이내)
+     - 본문 크롤링 → Gemini AI 요약 생성 (3문장) → 본문 폐기
+     - ⚠️ DB에는 요약(summary)만 저장, 본문(body)은 저장 안 함
      - news_rankings 테이블 저장
 
   2. 요약 뉴스 생성 (https://news.naver.com/section/{sectionId})
@@ -515,8 +518,9 @@ AWS RDS (MySQL):
 2. news: 기존 뉴스 데이터
 3. news_rankings: 네이버 뉴스 랭킹 데이터 (2일치만 보관)
    - 크롤링 소스: https://news.naver.com/main/ranking/popularDay.naver
-   - 컬럼: id, section_id, press, rank, title, url, body, summary, collected_at
-   - Gemini AI가 생성한 요약(summary) 포함
+   - 컬럼: id, section_id, press, rank, title, url, summary, collected_at
+   - ⚠️ body(본문) 필드 제거: 본문은 요약 생성 후 폐기
+   - Gemini AI가 생성한 요약(summary)만 저장
    - 인덱스: section_id, rank, collected_at
 4. summary_news_cache: 요약 뉴스 캐시
    - 크롤링 소스: https://news.naver.com/section/{sectionId}
@@ -568,15 +572,16 @@ Gemini API 사용:
 - 배치 선별 요약: 카테고리별 많은 뉴스 중 중요한 4개 선별 + 각각 3문장 요약 (요약 뉴스)
 
 랭킹 뉴스 요약 프로세스:
-1. 스케줄러가 하루 3번 (08:00, 13:00, 20:00) 자동 실행
+1. 스케줄러가 하루 3번 (06:00, 11:00, 17:00) 자동 실행
 2. 네이버 랭킹 페이지 크롤링 (https://news.naver.com/main/ranking/popularDay.naver)
 3. 각 기사 본문 크롤링
 4. Gemini API로 각 기사 개별 요약 생성 (3문장 이내)
-5. news_rankings 테이블에 저장 (본문 + 요약)
-6. 사용자 요청 시 DB에서 조회하여 글로벌 TOP 20 반환
+5. 본문 폐기 (메모리에서 삭제)
+6. news_rankings 테이블에 저장 (요약만 저장, 본문 제외)
+7. 사용자 요청 시 DB에서 조회하여 글로벌 TOP 20 반환
 
 요약 뉴스 생성 프로세스 (캐시 기반):
-1. 스케줄러가 하루 3번 (08:00, 13:00, 20:00) 자동 실행
+1. 스케줄러가 하루 3번 (06:00, 11:00, 17:00) 자동 실행
 2. 각 섹션별 최신 뉴스 크롤링 (https://news.naver.com/section/{sectionId})
 3. Gemini API에 뉴스 목록 전달 (섹션당 최대 100개)
 4. Gemini가 각 카테고리당 중요한 4개 선택 + 요약
@@ -587,7 +592,7 @@ Gemini API 사용:
 
 데이터 소스 분리:
 - 랭킹 뉴스: https://news.naver.com/main/ranking/popularDay.naver
-  → 본문 크롤링 → Gemini 요약 → news_rankings 테이블 → 글로벌 TOP 20 API
+  → 본문 크롤링 → Gemini 요약 → 본문 폐기 → news_rankings 테이블 (요약만) → 글로벌 TOP 20 API
 - 요약 뉴스: https://news.naver.com/section/{sectionId}
   → Gemini 선별/요약 → summary_news_cache 테이블 → 사용자 맞춤 요약 API
 
