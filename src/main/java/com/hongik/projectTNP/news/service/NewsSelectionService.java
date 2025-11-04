@@ -146,15 +146,20 @@ public class NewsSelectionService {
 
         String sectionName = NewsSection.fromSectionId(sectionId).getSectionName();
 
-        // 정규식으로 파싱: "1. [번호] 제목" 형태
-        // 예: "1. [3] 제목...\n요약: ..."
-        Pattern pattern = Pattern.compile("(\\d+)\\. \\[(\\d+)\\].*?\\n요약:\\s*(.+?)(?=\\n\\n|\\z)", Pattern.DOTALL);
+        // 유연한 정규식: 다양한 형식 허용
+        // 형식 1: "1.  [30] 매일신문] 제목\n    요약: ..."
+        // 형식 2: "1. [1] 제목\n요약: ..."
+        // 숫자와 대괄호 사이 공백, 들여쓰기 등 모두 허용
+        Pattern pattern = Pattern.compile("(\\d+)\\.\\s*\\[(\\d+)\\].*?\\n\\s*요약:\\s*(.+?)(?=\\n\\n\\d+\\.|\\z)", Pattern.DOTALL);
         Matcher matcher = pattern.matcher(geminiResponse);
 
         while (matcher.find()) {
             try {
                 int originalIndex = Integer.parseInt(matcher.group(2)) - 1;  // 번호는 1부터 시작하므로 -1
                 String summary = matcher.group(3).trim();
+
+                // 다음 항목 번호나 불필요한 텍스트 제거
+                summary = summary.replaceAll("\\n\\n\\d+\\..*", "").trim();
 
                 if (originalIndex >= 0 && originalIndex < allNews.size()) {
                     RawArticle selectedNews = allNews.get(originalIndex);
@@ -168,10 +173,11 @@ public class NewsSelectionService {
                             .build();
 
                     result.add(dto);
-                    log.debug("뉴스 선택 완료 - 제목: {}, 요약 길이: {}", selectedNews.getTitle(), summary.length());
+                    log.debug("뉴스 선택 완료 - 번호: [{}], 제목: {}, 요약 길이: {}",
+                            originalIndex + 1, selectedNews.getTitle(), summary.length());
                 }
             } catch (Exception e) {
-                log.error("Gemini 응답 파싱 중 오류: {}", e.getMessage());
+                log.error("Gemini 응답 파싱 중 오류: {}", e.getMessage(), e);
             }
         }
 
