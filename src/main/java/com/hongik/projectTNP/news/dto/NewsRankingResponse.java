@@ -19,8 +19,7 @@ public class NewsRankingResponse {
     private Integer rank;
     private String title;
     private String url;
-    private String body;
-    private String summary;  // Gemini가 생성한 요약
+    private String summary;  // Gemini가 생성한 요약 (본문은 제외)
     private LocalDateTime collectedAt;
 
     public static NewsRankingResponse from(NewsRanking newsRanking) {
@@ -31,7 +30,6 @@ public class NewsRankingResponse {
                 .rank(newsRanking.getRank())
                 .title(newsRanking.getTitle())
                 .url(newsRanking.getUrl())
-                .body(newsRanking.getBody())
                 .summary(newsRanking.getSummary())
                 .collectedAt(newsRanking.getCollectedAt())
                 .build();

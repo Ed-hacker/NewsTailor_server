@@ -121,6 +121,7 @@ public class NewsSelectionService {
                         .getContent().getParts().get(0).getText();
 
                 log.info("Gemini 응답 수신 완료 - 섹션: {}", sectionName);
+                log.debug("Gemini 응답 내용:\n{}", result);
                 return result;
             } else {
                 log.error("Gemini API 응답이 비어있습니다.");

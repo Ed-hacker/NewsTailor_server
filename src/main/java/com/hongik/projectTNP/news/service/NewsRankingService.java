@@ -5,9 +5,9 @@ import com.hongik.projectTNP.news.crawler.NaverRankingCrawler;
 import com.hongik.projectTNP.news.crawler.NewsSection;
 import com.hongik.projectTNP.news.domain.NewsRanking;
 import com.hongik.projectTNP.news.domain.NewsRankingRepository;
-import com.hongik.projectTNP.news.dto.ArticleContentResponse;
 import com.hongik.projectTNP.news.dto.NewsRankingResponse;
 import com.hongik.projectTNP.news.dto.RawArticle;
+import com.hongik.projectTNP.service.SummaryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,7 +28,7 @@ public class NewsRankingService {
     private final NewsRankingRepository newsRankingRepository;
     private final NaverRankingCrawler naverRankingCrawler;
     private final ArticleContentCrawler articleContentCrawler;
-    private final com.hongik.projectTNP.service.SummaryService summaryService;
+    private final SummaryService summaryService;
     
     @Transactional
     public void crawlAndSaveAllSections() {
@@ -73,11 +73,11 @@ public class NewsRankingService {
                     log.debug("중복 기사 스킵 - URL: {}", rawArticle.getUrl());
                     continue;
                 }
-                
+
                 // 본문 크롤링
                 String body = articleContentCrawler.extractArticleContent(rawArticle.getUrl());
 
-                // Gemini로 요약 생성
+                // Gemini로 요약 생성 (본문은 저장하지 않음)
                 String summary = null;
                 try {
                     summary = summaryService.generateSummary(body);
@@ -86,22 +86,21 @@ public class NewsRankingService {
                     log.error("요약 생성 실패 - Title: {}, Error: {}", rawArticle.getTitle(), e.getMessage());
                 }
 
-                // 엔티티 생성 및 저장
+                // 엔티티 생성 및 저장 (본문 제외, 요약만 저장)
                 NewsRanking newsRanking = NewsRanking.builder()
                         .sectionId(rawArticle.getSectionId())
                         .press(rawArticle.getPress())
                         .rank(rawArticle.getRank())
                         .title(rawArticle.getTitle())
                         .url(rawArticle.getUrl())
-                        .body(body)
                         .summary(summary)
                         .build();
 
                 newsRankingRepository.save(newsRanking);
                 savedCount++;
-                
+
                 log.debug("기사 저장 완료 - Title: {}, Rank: {}", rawArticle.getTitle(), rawArticle.getRank());
-                
+
             } catch (Exception e) {
                 log.error("기사 저장 실패 - URL: {}, Error: {}", rawArticle.getUrl(), e.getMessage());
             }
@@ -135,17 +134,6 @@ public class NewsRankingService {
                 .limit(limit)
                 .map(NewsRankingResponse::from)
                 .collect(Collectors.toList());
-    }
-    
-    @Transactional(readOnly = true)
-    public Optional<ArticleContentResponse> getArticleContent(Long id) {
-        return newsRankingRepository.findById(id)
-                .map(ranking -> ArticleContentResponse.builder()
-                        .id(ranking.getId())
-                        .title(ranking.getTitle())
-                        .url(ranking.getUrl())
-                        .body(ranking.getBody())
-                        .build());
     }
     
     @Transactional(readOnly = true)

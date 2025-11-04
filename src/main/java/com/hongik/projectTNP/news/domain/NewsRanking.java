@@ -39,14 +39,10 @@ public class NewsRanking {
     
     @Column(length = 500, nullable = false, unique = true)
     private String url;
-    
-    @Lob
-    @Column(columnDefinition = "TEXT")
-    private String body;
 
     @Lob
     @Column(columnDefinition = "TEXT")
-    private String summary;  // Gemini가 생성한 요약
+    private String summary;  // Gemini가 생성한 요약 (본문은 저장하지 않음)
 
     @Column(nullable = false)
     private LocalDateTime collectedAt;
