@@ -23,4 +23,4 @@ public class SignupRequestDto {
     private String nickname;
     
     private List<Long> interestIds;
-} 
+}

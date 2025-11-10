@@ -78,11 +78,13 @@ public class SummaryNewsController {
                 // Cache -> DTO 변환
                 List<SummaryNewsDto> newsForCategory = cachedNews.stream()
                         .map(cache -> SummaryNewsDto.builder()
+                                .id(cache.getId())
                                 .sectionId(cache.getSectionId())
                                 .sectionName(cache.getSectionName())
                                 .title(cache.getTitle())
                                 .url(cache.getUrl())
                                 .summary(cache.getSummary())
+                                .rankOrder(cache.getRankOrder())
                                 .build())
                         .collect(Collectors.toList());
 

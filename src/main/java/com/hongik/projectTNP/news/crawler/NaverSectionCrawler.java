@@ -24,7 +24,7 @@ public class NaverSectionCrawler {
     private static final String USER_AGENT = "Mozilla/5.0 ClaudeCrawler/1.0";
     private static final int TIMEOUT = 7000;
     private static final int MAX_BODY_SIZE = 2 * 1024 * 1024; // 2MB
-    private static final int MAX_ARTICLES = 100; // 최대 수집 기사 수
+    private static final int MAX_ARTICLES = 40; // 최대 수집 기사 수
 
     /**
      * 특정 섹션의 최신 뉴스를 크롤링
