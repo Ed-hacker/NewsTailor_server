@@ -118,7 +118,7 @@ public class NewsRankingSelectionService {
         prompt.append("   - [클러스터: 송미령]이 여러 개 있어도 그 중 1개만\n");
         prompt.append("   - [클러스터: 대장동]이 여러 개 있어도 그 중 1개만\n");
         prompt.append("   - 같은 클러스터 이름이 보이면 절대 2개 이상 선택하지 말 것\n\n");
-        prompt.append("2. 각 언론사에서 최대 4개만 선택\n\n");
+        prompt.append("2. 반드시 정확히 20개를 선택해야 함 (19개도 안되고 21개도 안됨)\n\n");
         prompt.append("**선택 기준 (우선순위 순):**\n");
         prompt.append("1. 클러스터 크기가 큰 이슈 우선 (사회적 영향력)\n");
         prompt.append("2. 각 클러스터당 1개씩 선택하여 최대한 다양한 주제 커버\n");
@@ -127,14 +127,17 @@ public class NewsRankingSelectionService {
         prompt.append("**절차:**\n");
         prompt.append("1단계: 클러스터를 크기 순으로 정렬\n");
         prompt.append("2단계: 각 클러스터에서 가장 좋은 뉴스 1개씩만 선택\n");
-        prompt.append("3단계: 20개가 될 때까지 반복\n");
-        prompt.append("4단계: 같은 클러스터가 2번 선택되었는지 최종 검증\n\n");
+        prompt.append("3단계: 20개가 될 때까지 계속 선택 (작은 클러스터도 포함)\n");
+        prompt.append("4단계: 같은 클러스터가 2번 선택되었는지 최종 검증\n");
+        prompt.append("5단계: 정확히 20개인지 확인\n\n");
         prompt.append("**응답 형식 (번호만 작성):**\n");
         prompt.append("1. [번호]\n");
         prompt.append("2. [번호]\n");
         prompt.append("...\n");
         prompt.append("20. [번호]\n\n");
-        prompt.append("⚠️ 경고: 같은 클러스터에서 2개 이상 선택하면 안 됩니다. 반드시 다시 확인하세요!");
+        prompt.append("⚠️ 경고: \n");
+        prompt.append("- 같은 클러스터에서 2개 이상 선택하면 안 됩니다\n");
+        prompt.append("- 반드시 20개를 모두 선택해야 합니다 (더 적게 선택하면 안됨)");
 
         return prompt.toString();
     }
