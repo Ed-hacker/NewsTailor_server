@@ -108,38 +108,66 @@ public class NewsSelectionService {
 
         log.info("Gemini API 호출 - 섹션: {}, 뉴스 개수: {}", sectionName, newsList.size());
 
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("x-goog-api-key", geminiApiKey);
+        // Exponential Backoff 재시도 로직
+        int maxRetries = 5;
+        int retryCount = 0;
+        long delayMs = 1000; // 초기 대기 시간 1초
 
-            GeminiRequest requestBody = new GeminiRequest(prompt);
-            HttpEntity<GeminiRequest> entity = new HttpEntity<>(requestBody, headers);
+        while (retryCount < maxRetries) {
+            try {
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                headers.set("x-goog-api-key", geminiApiKey);
 
-            ResponseEntity<GeminiResponse> response = restTemplate.postForEntity(
-                    geminiApiUrl,
-                    entity,
-                    GeminiResponse.class
-            );
+                GeminiRequest requestBody = new GeminiRequest(prompt);
+                HttpEntity<GeminiRequest> entity = new HttpEntity<>(requestBody, headers);
 
-            if (response.getBody() != null &&
-                    response.getBody().getCandidates() != null &&
-                    !response.getBody().getCandidates().isEmpty()) {
+                ResponseEntity<GeminiResponse> response = restTemplate.postForEntity(
+                        geminiApiUrl,
+                        entity,
+                        GeminiResponse.class
+                );
 
-                String result = response.getBody().getCandidates().get(0)
-                        .getContent().getParts().get(0).getText();
+                if (response.getBody() != null &&
+                        response.getBody().getCandidates() != null &&
+                        !response.getBody().getCandidates().isEmpty()) {
 
-                log.info("Gemini 응답 수신 완료 - 섹션: {}", sectionName);
-                log.debug("Gemini 응답 내용:\n{}", result);
-                return result;
-            } else {
-                log.error("Gemini API 응답이 비어있습니다.");
-                return "";
+                    String result = response.getBody().getCandidates().get(0)
+                            .getContent().getParts().get(0).getText();
+
+                    log.info("Gemini API 성공 - 섹션: {}, 재시도 횟수: {}", sectionName, retryCount);
+                    log.debug("Gemini 응답 내용:\n{}", result);
+                    return result;
+                } else {
+                    log.error("Gemini API 응답이 비어있습니다.");
+                    return "";
+                }
+            } catch (Exception e) {
+                retryCount++;
+
+                if (retryCount >= maxRetries) {
+                    log.error("Gemini API 최종 실패 - 섹션: {}, 재시도 {}회 후 실패: {}",
+                            sectionName, maxRetries, e.getMessage());
+                    return "";
+                }
+
+                log.warn("Gemini API 실패 (재시도 {}/{}) - 섹션: {}, 에러: {}, {}ms 후 재시도",
+                        retryCount, maxRetries, sectionName, e.getMessage(), delayMs);
+
+                try {
+                    Thread.sleep(delayMs);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    log.error("재시도 대기 중 인터럽트 발생");
+                    return "";
+                }
+
+                // Exponential Backoff: 대기 시간을 2배로 증가 (1초 → 2초 → 4초 → 8초 → 16초)
+                delayMs *= 2;
             }
-        } catch (Exception e) {
-            log.error("Gemini API 호출 실패: {}", e.getMessage(), e);
-            return "";
         }
+
+        return "";
     }
 
     /**

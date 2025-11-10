@@ -112,21 +112,29 @@ public class NewsRankingSelectionService {
                     article.getTitle()));
         }
 
-        prompt.append("\n다음 기준으로 최종 20개를 선택하세요:\n\n");
-        prompt.append("1. **사회적 영향력**: 클러스터 크기가 큰 이슈 우선 (여러 언론사가 다루는 주제)\n");
-        prompt.append("2. **시의성**: 최근 이슈이면서 중요한 뉴스\n");
-        prompt.append("3. **다양성**:\n");
-        prompt.append("   - 같은 클러스터에서 최대 2개까지만\n");
-        prompt.append("   - 같은 언론사 최대 2개까지만\n");
-        prompt.append("   - 다양한 섹션과 주제를 골고루\n");
-        prompt.append("4. **품질**: 제목이 명확하고 구체적인 뉴스\n");
-        prompt.append("5. **중복 제거**: 내용이 완전히 같은 뉴스는 1개만\n\n");
-        prompt.append("응답 형식:\n");
+        prompt.append("\n=== 선택 규칙 (엄격히 준수 필수) ===\n\n");
+        prompt.append("**절대 규칙:**\n");
+        prompt.append("1. 각 클러스터에서 무조건 1개만 선택 (예외 없음)\n");
+        prompt.append("   - [클러스터: 송미령]이 여러 개 있어도 그 중 1개만\n");
+        prompt.append("   - [클러스터: 대장동]이 여러 개 있어도 그 중 1개만\n");
+        prompt.append("   - 같은 클러스터 이름이 보이면 절대 2개 이상 선택하지 말 것\n\n");
+        prompt.append("2. 각 언론사에서 최대 4개만 선택\n\n");
+        prompt.append("**선택 기준 (우선순위 순):**\n");
+        prompt.append("1. 클러스터 크기가 큰 이슈 우선 (사회적 영향력)\n");
+        prompt.append("2. 각 클러스터당 1개씩 선택하여 최대한 다양한 주제 커버\n");
+        prompt.append("3. 제목이 명확하고 구체적인 뉴스 우선\n");
+        prompt.append("4. 언론사 순위(1위 > 2위 > ...)\n\n");
+        prompt.append("**절차:**\n");
+        prompt.append("1단계: 클러스터를 크기 순으로 정렬\n");
+        prompt.append("2단계: 각 클러스터에서 가장 좋은 뉴스 1개씩만 선택\n");
+        prompt.append("3단계: 20개가 될 때까지 반복\n");
+        prompt.append("4단계: 같은 클러스터가 2번 선택되었는지 최종 검증\n\n");
+        prompt.append("**응답 형식 (번호만 작성):**\n");
         prompt.append("1. [번호]\n");
         prompt.append("2. [번호]\n");
         prompt.append("...\n");
         prompt.append("20. [번호]\n\n");
-        prompt.append("**중요:** 반드시 위 목록의 번호만 정확히 참조해주세요. 번호는 1부터 시작합니다.");
+        prompt.append("⚠️ 경고: 같은 클러스터에서 2개 이상 선택하면 안 됩니다. 반드시 다시 확인하세요!");
 
         return prompt.toString();
     }
