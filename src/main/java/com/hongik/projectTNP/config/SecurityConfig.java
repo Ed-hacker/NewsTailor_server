@@ -46,7 +46,8 @@ public class SecurityConfig {
             "http://localhost:5173",
             "http://localhost:5174",
             "http://localhost:5175",
-            "https://newstailor.pages.dev"
+            "https://newstailor.pages.dev",
+            "https://news-tailor.vercel.app"
         )); // 허용된 도메인들
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*")); // 모든 헤더 허용

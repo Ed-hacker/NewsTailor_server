@@ -66,6 +66,7 @@ public class UserServiceImpl implements UserService {
 
         // 1. 닉네임 업데이트
         user.updateNickname(profileUpdateDto.getNickname());
+        userRepository.save(user);  // 명시적으로 저장
 
         // 2. 기존 관심분야 삭제
         List<UserInterest> existingInterests = userInterestRepository.findByUser(user);
