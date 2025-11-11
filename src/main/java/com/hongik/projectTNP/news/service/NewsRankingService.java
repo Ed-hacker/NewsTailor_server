@@ -65,9 +65,13 @@ public class NewsRankingService {
                         log.error("요약 생성 실패 - Title: {}, Error: {}", rawArticle.getTitle(), e.getMessage());
                     }
 
+                    // Gemini로 카테고리 분류
+                    Integer actualSectionId = newsRankingSelectionService.classifyNewsCategory(rawArticle.getTitle());
+                    log.info("카테고리 분류: {} -> {}", rawArticle.getTitle(), actualSectionId);
+
                     // 엔티티 생성 및 저장
                     NewsRanking newsRanking = NewsRanking.builder()
-                            .sectionId(rawArticle.getSectionId())
+                            .sectionId(actualSectionId)  // Gemini가 분류한 카테고리 사용
                             .press(rawArticle.getPress())
                             .rank(rawArticle.getRank())
                             .title(rawArticle.getTitle())

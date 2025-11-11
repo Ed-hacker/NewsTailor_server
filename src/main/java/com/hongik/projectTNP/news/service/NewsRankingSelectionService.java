@@ -289,4 +289,77 @@ public class NewsRankingSelectionService {
 
         return union.isEmpty() ? 0.0 : (double) intersection.size() / union.size();
     }
+
+    /**
+     * Gemini를 사용하여 뉴스 제목으로 카테고리 분류
+     */
+    public Integer classifyNewsCategory(String title) {
+        String prompt = String.format(
+                "다음 뉴스 제목을 보고 가장 적절한 카테고리를 선택하세요:\n\n" +
+                "제목: \"%s\"\n\n" +
+                "카테고리 목록:\n" +
+                "100 - 정치 (정치, 정부, 선거, 국회, 대통령, 정당 등)\n" +
+                "101 - 경제 (경제, 금융, 주식, 부동산, 기업, 산업 등)\n" +
+                "102 - 사회 (사회, 사건, 사고, 범죄, 재난, 교육, 복지 등)\n" +
+                "103 - 생활/문화 (문화, 예술, 엔터테인먼트, 건강, 여행, 음식 등)\n" +
+                "104 - 세계 (국제, 해외, 외교, 글로벌 이슈 등)\n" +
+                "105 - IT/과학 (IT, 과학, 기술, 인터넷, 모바일, AI 등)\n\n" +
+                "응답 형식: 숫자만 반환 (예: 100)\n" +
+                "중요: 반드시 100, 101, 102, 103, 104, 105 중 하나의 숫자만 반환하세요.",
+                title
+        );
+
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("x-goog-api-key", geminiApiKey);
+
+            Map<String, Object> requestBody = new HashMap<>();
+            List<Map<String, Object>> contents = new ArrayList<>();
+            Map<String, Object> content = new HashMap<>();
+            List<Map<String, String>> parts = new ArrayList<>();
+            Map<String, String> part = new HashMap<>();
+            part.put("text", prompt);
+            parts.add(part);
+            content.put("parts", parts);
+            contents.add(content);
+            requestBody.put("contents", contents);
+
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+
+            ResponseEntity<Map> response = restTemplate.postForEntity(
+                    geminiApiUrl,
+                    entity,
+                    Map.class
+            );
+
+            if (response.getBody() != null) {
+                List<Map<String, Object>> candidates = (List<Map<String, Object>>) response.getBody().get("candidates");
+                if (candidates != null && !candidates.isEmpty()) {
+                    Map<String, Object> candidate = candidates.get(0);
+                    Map<String, Object> contentMap = (Map<String, Object>) candidate.get("content");
+                    List<Map<String, String>> partsList = (List<Map<String, String>>) contentMap.get("parts");
+                    if (partsList != null && !partsList.isEmpty()) {
+                        String result = partsList.get(0).get("text").trim();
+
+                        // 숫자만 추출
+                        Pattern numberPattern = Pattern.compile("(100|101|102|103|104|105)");
+                        Matcher matcher = numberPattern.matcher(result);
+                        if (matcher.find()) {
+                            Integer sectionId = Integer.parseInt(matcher.group(1));
+                            log.debug("카테고리 분류 완료 - Title: {}, SectionId: {}", title, sectionId);
+                            return sectionId;
+                        }
+                    }
+                }
+            }
+
+            log.warn("Gemini 카테고리 분류 실패 - 기본값(100) 반환");
+            return 100; // 기본값: 정치
+
+        } catch (Exception e) {
+            log.error("Gemini 카테고리 분류 실패: {}", e.getMessage());
+            return 100; // 기본값: 정치
+        }
+    }
 }
