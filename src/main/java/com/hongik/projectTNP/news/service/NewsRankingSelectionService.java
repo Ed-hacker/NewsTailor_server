@@ -39,7 +39,7 @@ public class NewsRankingSelectionService {
 
         // Phase 1: 클러스터링 및 1차 필터링
         List<NewsCluster> clusters = newsClusteringService.clusterNews(allRankingNews);
-        List<RawArticle> candidates = newsClusteringService.selectCandidateNews(clusters, 30);
+        List<RawArticle> candidates = newsClusteringService.selectCandidateNews(clusters, 100);
 
         log.info("Phase 1 완료 - 후보 뉴스: {}개", candidates.size());
 
@@ -182,10 +182,11 @@ public class NewsRankingSelectionService {
     }
 
     /**
-     * Gemini 응답 파싱
+     * Gemini 응답 파싱 (제목 유사도 체크 포함)
      */
     private List<RawArticle> parseGeminiResponse(String geminiResponse, List<RawArticle> candidates) {
         List<RawArticle> selectedNews = new ArrayList<>();
+        Set<String> selectedTitles = new HashSet<>();
 
         // 정규식: "1. [번호]" 또는 "1. 번호" 형식
         Pattern pattern = Pattern.compile("\\d+\\.\\s*\\[?(\\d+)\\]?");
@@ -198,10 +199,13 @@ public class NewsRankingSelectionService {
                 if (index >= 0 && index < candidates.size()) {
                     RawArticle article = candidates.get(index);
 
-                    // 중복 방지
-                    if (!selectedNews.contains(article)) {
+                    // 중복 방지: 같은 기사 or 제목이 너무 유사한 기사
+                    if (!selectedNews.contains(article) && !isSimilarTitleExists(article.getTitle(), selectedTitles)) {
                         selectedNews.add(article);
+                        selectedTitles.add(article.getTitle());
                         log.debug("선택: [{}] {}", index + 1, article.getTitle());
+                    } else {
+                        log.debug("중복 제목 스킵: [{}] {}", index + 1, article.getTitle());
                     }
                 }
 
@@ -214,18 +218,75 @@ public class NewsRankingSelectionService {
             }
         }
 
-        // 20개가 안 되면 Phase 1 결과로 채우기
+        // 20개가 안 되면 Phase 1 결과로 채우기 (유사도 체크하면서)
         if (selectedNews.size() < 20) {
             log.warn("Gemini 선정 결과가 {}개만 있음 - 나머지는 Phase 1 결과로 채움", selectedNews.size());
 
             for (RawArticle candidate : candidates) {
-                if (!selectedNews.contains(candidate)) {
+                if (!selectedNews.contains(candidate) && !isSimilarTitleExists(candidate.getTitle(), selectedTitles)) {
                     selectedNews.add(candidate);
+                    selectedTitles.add(candidate.getTitle());
                     if (selectedNews.size() >= 20) break;
                 }
             }
         }
 
         return selectedNews;
+    }
+
+    /**
+     * 제목 유사도 체크 (핵심 키워드 기반)
+     */
+    private boolean isSimilarTitleExists(String newTitle, Set<String> existingTitles) {
+        // 제목에서 특수문자, 공백 제거하고 핵심 키워드만 추출
+        String cleanedNew = cleanTitle(newTitle);
+
+        for (String existingTitle : existingTitles) {
+            String cleanedExisting = cleanTitle(existingTitle);
+
+            // 제목의 70% 이상이 겹치면 유사한 것으로 판단
+            if (calculateSimilarity(cleanedNew, cleanedExisting) > 0.7) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * 제목 정제 (특수문자, 공백 제거)
+     */
+    private String cleanTitle(String title) {
+        return title.replaceAll("[\\[\\](){}\"',./\\-…·]", "")
+                .replaceAll("\\s+", "")
+                .toLowerCase();
+    }
+
+    /**
+     * 두 문자열의 유사도 계산 (Jaccard similarity)
+     */
+    private double calculateSimilarity(String s1, String s2) {
+        if (s1.isEmpty() || s2.isEmpty()) {
+            return 0.0;
+        }
+
+        // 2-gram 기반 유사도 계산
+        Set<String> set1 = new HashSet<>();
+        Set<String> set2 = new HashSet<>();
+
+        for (int i = 0; i < s1.length() - 1; i++) {
+            set1.add(s1.substring(i, i + 2));
+        }
+        for (int i = 0; i < s2.length() - 1; i++) {
+            set2.add(s2.substring(i, i + 2));
+        }
+
+        Set<String> intersection = new HashSet<>(set1);
+        intersection.retainAll(set2);
+
+        Set<String> union = new HashSet<>(set1);
+        union.addAll(set2);
+
+        return union.isEmpty() ? 0.0 : (double) intersection.size() / union.size();
     }
 }
