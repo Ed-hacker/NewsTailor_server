@@ -17,7 +17,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -33,8 +32,10 @@ public class NewsRankingService {
     
     @Transactional
     public void crawlAndSaveAllSections() {
-        // 2일 이전 데이터 삭제
-        deleteOldData();
+        // 기존 랭킹 뉴스 모두 삭제 (새로운 20개로 교체)
+        log.info("기존 랭킹 뉴스 삭제 시작");
+        newsRankingRepository.deleteAll();
+        log.info("기존 랭킹 뉴스 삭제 완료");
 
         LocalDate today = LocalDate.now();
 
@@ -47,17 +48,10 @@ public class NewsRankingService {
             List<RawArticle> top20Articles = newsRankingSelectionService.selectTop20News(rawArticles);
             log.info("하이브리드 알고리즘 선정 완료 - {}개 뉴스", top20Articles.size());
 
-            // 선정된 20개 뉴스만 저장
+            // 선정된 20개 뉴스 저장 (중복 체크 불필요 - 이미 전체 삭제함)
             int savedCount = 0;
             for (RawArticle rawArticle : top20Articles) {
                 try {
-                    // 중복 확인
-                    Optional<NewsRanking> existing = newsRankingRepository.findByUrl(rawArticle.getUrl());
-                    if (existing.isPresent()) {
-                        log.debug("중복 기사 스킵 - URL: {}", rawArticle.getUrl());
-                        continue;
-                    }
-
                     // 본문 크롤링
                     String body = articleContentCrawler.extractArticleContent(rawArticle.getUrl());
 
