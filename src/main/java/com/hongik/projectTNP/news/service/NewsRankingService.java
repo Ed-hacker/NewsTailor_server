@@ -29,74 +29,69 @@ public class NewsRankingService {
     private final ArticleContentCrawler articleContentCrawler;
     private final SummaryService summaryService;
     private final NewsRankingSelectionService newsRankingSelectionService;
-    private final NewsRankingService self; // Self-injection for @Transactional
-    
+
+    @Transactional
     public void crawlAndSaveAllSections() {
         LocalDate today = LocalDate.now();
 
         try {
-            // 1. 크롤링
+            // 1. 기존 랭킹 뉴스 모두 삭제
+            log.info("기존 랭킹 뉴스 삭제 시작");
+            newsRankingRepository.deleteAll();
+            newsRankingRepository.flush(); // 삭제를 DB에 즉시 반영
+            log.info("기존 랭킹 뉴스 삭제 완료");
+
+            // 2. 크롤링
             List<RawArticle> rawArticles = naverRankingCrawler.crawlRanking(NewsSection.POLITICS, today);
             log.info("크롤링 완료 - 총 {}개 뉴스", rawArticles.size());
 
-            // 2. 하이브리드 알고리즘으로 상위 20개 선정
+            // 3. 하이브리드 알고리즘으로 상위 20개 선정
             List<RawArticle> top20Articles = newsRankingSelectionService.selectTop20News(rawArticles);
             log.info("하이브리드 알고리즘 선정 완료 - {}개 뉴스", top20Articles.size());
 
-            // 3. 기존 데이터 삭제 후 새로운 20개 저장 (트랜잭션 내에서)
-            self.saveTop20News(top20Articles);
+            // 4. 선정된 20개 뉴스 저장
+            int savedCount = 0;
+            for (RawArticle rawArticle : top20Articles) {
+                try {
+                    // 본문 크롤링
+                    String body = articleContentCrawler.extractArticleContent(rawArticle.getUrl());
+
+                    // Gemini로 요약 생성
+                    String summary = null;
+                    try {
+                        summary = summaryService.generateSummary(body);
+                        log.debug("요약 생성 완료 - Title: {}", rawArticle.getTitle());
+                    } catch (Exception e) {
+                        log.error("요약 생성 실패 - Title: {}, Error: {}", rawArticle.getTitle(), e.getMessage());
+                    }
+
+                    // 엔티티 생성 및 저장
+                    NewsRanking newsRanking = NewsRanking.builder()
+                            .sectionId(rawArticle.getSectionId())
+                            .press(rawArticle.getPress())
+                            .rank(rawArticle.getRank())
+                            .title(rawArticle.getTitle())
+                            .url(rawArticle.getUrl())
+                            .summary(summary)
+                            .build();
+
+                    newsRankingRepository.save(newsRanking);
+                    savedCount++;
+
+                    log.debug("기사 저장 완료 - Title: {}", rawArticle.getTitle());
+
+                } catch (Exception e) {
+                    log.error("기사 저장 실패 - URL: {}, Error: {}", rawArticle.getUrl(), e.getMessage());
+                    // 예외 발생 시에도 계속 진행 (일부 실패해도 나머지는 저장)
+                }
+            }
+
+            log.info("랭킹 뉴스 저장 완료 - 저장된 기사 수: {}/{}", savedCount, top20Articles.size());
 
         } catch (Exception e) {
             log.error("랭킹 뉴스 크롤링 실패: {}", e.getMessage(), e);
+            throw e; // 트랜잭션 롤백을 위해 예외 재발생
         }
-    }
-
-    @Transactional
-    public void saveTop20News(List<RawArticle> top20Articles) {
-        // 기존 랭킹 뉴스 모두 삭제
-        log.info("기존 랭킹 뉴스 삭제 시작");
-        newsRankingRepository.deleteAll();
-        newsRankingRepository.flush(); // 삭제를 DB에 즉시 반영
-        log.info("기존 랭킹 뉴스 삭제 완료");
-
-        // 선정된 20개 뉴스 저장
-        int savedCount = 0;
-        for (RawArticle rawArticle : top20Articles) {
-            try {
-                // 본문 크롤링
-                String body = articleContentCrawler.extractArticleContent(rawArticle.getUrl());
-
-                // Gemini로 요약 생성
-                String summary = null;
-                try {
-                    summary = summaryService.generateSummary(body);
-                    log.debug("요약 생성 완료 - Title: {}", rawArticle.getTitle());
-                } catch (Exception e) {
-                    log.error("요약 생성 실패 - Title: {}, Error: {}", rawArticle.getTitle(), e.getMessage());
-                }
-
-                // 엔티티 생성 및 저장
-                NewsRanking newsRanking = NewsRanking.builder()
-                        .sectionId(rawArticle.getSectionId())
-                        .press(rawArticle.getPress())
-                        .rank(rawArticle.getRank())
-                        .title(rawArticle.getTitle())
-                        .url(rawArticle.getUrl())
-                        .summary(summary)
-                        .build();
-
-                newsRankingRepository.save(newsRanking);
-                savedCount++;
-
-                log.debug("기사 저장 완료 - Title: {}", rawArticle.getTitle());
-
-            } catch (Exception e) {
-                log.error("기사 저장 실패 - URL: {}, Error: {}", rawArticle.getUrl(), e.getMessage());
-                // 예외 발생 시에도 계속 진행 (일부 실패해도 나머지는 저장)
-            }
-        }
-
-        log.info("랭킹 뉴스 저장 완료 - 저장된 기사 수: {}/{}", savedCount, top20Articles.size());
     }
 
     @Transactional
