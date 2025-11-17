@@ -21,9 +21,9 @@ public interface BookmarkService {
      * 북마크를 삭제합니다.
      *
      * @param username 사용자명
-     * @param summaryNewsCacheId 요약 뉴스 캐시 ID
+     * @param url 뉴스 URL
      */
-    void removeBookmark(String username, Long summaryNewsCacheId);
+    void removeBookmark(String username, String url);
 
     /**
      * 사용자의 북마크 목록을 조회합니다.

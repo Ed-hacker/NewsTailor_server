@@ -36,9 +36,9 @@ public class BookmarkController {
     @DeleteMapping
     public ResponseEntity<String> removeBookmark(
             Authentication authentication,
-            @RequestParam(value = "summaryNewsCacheId") Long summaryNewsCacheId) {
+            @RequestParam(value = "url") String url) {
         String username = authentication.getName();
-        bookmarkService.removeBookmark(username, summaryNewsCacheId);
+        bookmarkService.removeBookmark(username, url);
         return ResponseEntity.ok("북마크가 삭제되었습니다.");
     }
 

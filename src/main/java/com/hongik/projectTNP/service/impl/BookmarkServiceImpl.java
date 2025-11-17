@@ -64,21 +64,18 @@ public class BookmarkServiceImpl implements BookmarkService {
 
     @Override
     @Transactional
-    public void removeBookmark(String username, Long summaryNewsCacheId) {
+    public void removeBookmark(String username, String url) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
 
-        // summaryNewsCacheId는 실제로 bookmarkId를 의미 (프론트엔드에서 getBookmarks로 받은 id 값)
-        Bookmark bookmark = bookmarkRepository.findById(summaryNewsCacheId)
-                .orElseThrow(() -> new IllegalArgumentException("북마크를 찾을 수 없습니다: " + summaryNewsCacheId));
-
-        // 본인의 북마크인지 확인
-        if (!bookmark.getUser().equals(user)) {
-            throw new IllegalArgumentException("본인의 북마크만 삭제할 수 있습니다.");
+        // 북마크 존재 여부 확인
+        if (!bookmarkRepository.existsByUserAndUrl(user, url)) {
+            throw new IllegalArgumentException("삭제할 북마크를 찾을 수 없습니다.");
         }
 
-        bookmarkRepository.delete(bookmark);
-        log.info("북마크 삭제 완료 - User: {}, BookmarkId: {}", username, summaryNewsCacheId);
+        // URL 기반으로 북마크 삭제
+        bookmarkRepository.deleteByUserAndUrl(user, url);
+        log.info("북마크 삭제 완료 - User: {}, URL: {}", username, url);
     }
 
     @Override
