@@ -2,9 +2,13 @@ package com.hongik.projectTNP.news.service;
 
 import com.hongik.projectTNP.news.dto.NewsCluster;
 import com.hongik.projectTNP.news.dto.RawArticle;
+import kr.co.shineware.nlp.komoran.constant.DEFAULT_MODEL;
+import kr.co.shineware.nlp.komoran.core.Komoran;
+import kr.co.shineware.nlp.komoran.model.KomoranResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import jakarta.annotation.PostConstruct;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -13,6 +17,18 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class NewsClusteringService {
+
+    private Komoran komoran;
+
+    /**
+     * Komoran 초기화
+     */
+    @PostConstruct
+    public void init() {
+        log.info("Komoran 형태소 분석기 초기화 시작");
+        komoran = new Komoran(DEFAULT_MODEL.LIGHT);
+        log.info("Komoran 형태소 분석기 초기화 완료");
+    }
 
     /**
      * Phase 1: 키워드 추출 및 클러스터링
@@ -96,28 +112,52 @@ public class NewsClusteringService {
     }
 
     /**
-     * 제목에서 키워드 추출 (간단한 방식)
-     * - 2글자 이상 단어
-     * - 특수문자 제거
+     * 제목에서 키워드 추출 (Komoran 형태소 분석 사용)
+     * - 명사(NNG, NNP), 동사(VV), 형용사(VA)만 추출
+     * - 2글자 이상 단어만 선택
      * - 불용어 제거
      */
     private Set<String> extractKeywords(String title) {
         Set<String> keywords = new HashSet<>();
 
-        // 불용어 리스트
+        // 불용어 리스트 (확장)
         Set<String> stopWords = Set.of(
-                "이", "그", "저", "것", "수", "등", "및", "또", "더", "를", "을", "가", "은", "는",
-                "에", "의", "와", "과", "도", "만", "까지", "부터", "으로", "로", "에서", "라고", "고",
-                "한다", "했다", "한", "있다", "없다", "되다", "하다", "이다", "있는", "없는", "위해"
+                "이", "그", "저", "것", "수", "등", "및", "또", "더", "때", "곳", "명", "개", "번", "차",
+                "년", "월", "일", "시", "분", "초", "원", "억", "조", "만",
+                "하다", "되다", "있다", "없다", "이다", "아니다", "같다", "위하다",
+                "통하다", "대하다", "관하다", "따르다", "보다", "주다", "받다"
         );
 
-        // 공백, 특수문자 기준으로 분리
-        String[] tokens = title.split("[\\s\\[\\](){}\"',.\\/\\-]+");
+        try {
+            // 형태소 분석 수행
+            KomoranResult result = komoran.analyze(title);
 
-        for (String token : tokens) {
-            // 2글자 이상, 불용어가 아닌 경우만
-            if (token.length() >= 2 && !stopWords.contains(token)) {
-                keywords.add(token);
+            // 명사, 동사, 형용사만 추출
+            List<String> nouns = result.getNouns();  // 명사
+            List<String> morphList = result.getMorphesByTags("VV", "VA");  // 동사, 형용사
+
+            // 명사 추가
+            for (String noun : nouns) {
+                if (noun.length() >= 2 && !stopWords.contains(noun)) {
+                    keywords.add(noun);
+                }
+            }
+
+            // 동사, 형용사 추가
+            for (String morph : morphList) {
+                if (morph.length() >= 2 && !stopWords.contains(morph)) {
+                    keywords.add(morph);
+                }
+            }
+
+        } catch (Exception e) {
+            // 형태소 분석 실패 시 기존 방식으로 폴백
+            log.warn("형태소 분석 실패, 기존 방식 사용: {}", e.getMessage());
+            String[] tokens = title.split("[\\s\\[\\](){}\"',.\\-]+");
+            for (String token : tokens) {
+                if (token.length() >= 2 && !stopWords.contains(token)) {
+                    keywords.add(token);
+                }
             }
         }
 

@@ -21,6 +21,7 @@ configurations {
 
 repositories {
 	mavenCentral()
+	maven { url 'https://jitpack.io' }
 }
 
 dependencies {
@@ -40,7 +41,10 @@ dependencies {
 	
 	// Apache Commons
 	implementation 'org.apache.commons:commons-lang3:3.14.0'
-	
+
+	// 형태소 분석기 (Komoran)
+	implementation 'com.github.shin285:KOMORAN:3.3.9'
+
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'com.mysql:mysql-connector-j'
