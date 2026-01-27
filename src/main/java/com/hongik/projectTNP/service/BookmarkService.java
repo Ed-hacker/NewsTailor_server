@@ -11,7 +11,7 @@ public interface BookmarkService {
 
     /**
      * 요약 뉴스를 북마크에 추가합니다.
-     *
+ *
      * @param username 사용자명
      * @param summaryNewsCacheId 요약 뉴스 캐시 ID
      */

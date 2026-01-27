@@ -1,9 +1,6 @@
 package com.hongik.projectTNP.service;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.hongik.projectTNP.domain.News;
-import com.hongik.projectTNP.domain.Summary;
-import com.hongik.projectTNP.repository.SummaryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,7 +10,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
@@ -25,7 +21,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GeminiSummaryService implements SummaryService {
 
-    private final SummaryRepository summaryRepository;
     private final RestTemplate restTemplate;
 
     @Value("${gemini.api.key:YOUR_GEMINI_API_KEY}")
@@ -33,29 +28,6 @@ public class GeminiSummaryService implements SummaryService {
 
     @Value("${gemini.api.url:https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent}")
     private String geminiApiUrl;
-
-    @Override
-    @Transactional
-    public Summary summarizeNews(News news) {
-        if (news == null || news.getContent() == null || news.getContent().isEmpty()) {
-            log.warn("요약할 내용이 없는 뉴스입니다: News ID {}", news != null ? news.getId() : "null");
-            return null;
-        }
-
-        String contentToSummarize = news.getContent();
-        int maxLength = 2000; // Gemini는 더 긴 입력을 처리할 수 있음
-        if (contentToSummarize.length() > maxLength) {
-            contentToSummarize = contentToSummarize.substring(0, maxLength);
-        }
-
-        String summarizedText = generateSummaryWithGemini(contentToSummarize);
-
-        Summary summary = Summary.builder()
-                .news(news)
-                .summary_text(summarizedText)
-                .build();
-        return summaryRepository.save(summary);
-    }
 
     @Override
     public String generateSummary(String textToSummarize) {
