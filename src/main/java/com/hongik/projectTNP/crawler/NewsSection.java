@@ -1,4 +1,4 @@
-package com.hongik.projectTNP.news.crawler;
+package com.hongik.projectTNP.crawler;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

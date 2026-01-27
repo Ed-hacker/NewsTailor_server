@@ -1,7 +1,7 @@
-package com.hongik.projectTNP.news.service;
+package com.hongik.projectTNP.service;
 
-import com.hongik.projectTNP.news.dto.NewsCluster;
-import com.hongik.projectTNP.news.dto.RawArticle;
+import com.hongik.projectTNP.dto.news.NewsCluster;
+import com.hongik.projectTNP.dto.news.RawArticle;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

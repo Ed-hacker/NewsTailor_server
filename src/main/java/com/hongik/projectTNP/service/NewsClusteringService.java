@@ -1,7 +1,7 @@
-package com.hongik.projectTNP.news.service;
+package com.hongik.projectTNP.service;
 
-import com.hongik.projectTNP.news.dto.NewsCluster;
-import com.hongik.projectTNP.news.dto.RawArticle;
+import com.hongik.projectTNP.dto.news.NewsCluster;
+import com.hongik.projectTNP.dto.news.RawArticle;
 import kr.co.shineware.nlp.komoran.constant.DEFAULT_MODEL;
 import kr.co.shineware.nlp.komoran.core.Komoran;
 import kr.co.shineware.nlp.komoran.model.KomoranResult;

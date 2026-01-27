@@ -1,11 +1,11 @@
-package com.hongik.projectTNP.news.controller;
+package com.hongik.projectTNP.controller;
 
 import com.hongik.projectTNP.domain.User;
 import com.hongik.projectTNP.domain.UserInterest;
 import com.hongik.projectTNP.exception.CustomException;
-import com.hongik.projectTNP.news.domain.SummaryNewsCache;
-import com.hongik.projectTNP.news.domain.SummaryNewsCacheRepository;
-import com.hongik.projectTNP.news.dto.SummaryNewsDto;
+import com.hongik.projectTNP.domain.SummaryNewsCache;
+import com.hongik.projectTNP.repository.SummaryNewsCacheRepository;
+import com.hongik.projectTNP.dto.news.SummaryNewsDto;
 import com.hongik.projectTNP.repository.UserInterestRepository;
 import com.hongik.projectTNP.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

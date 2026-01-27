@@ -1,6 +1,6 @@
 package com.hongik.projectTNP.controller;
 
-import com.hongik.projectTNP.news.dto.SummaryNewsDto;
+import com.hongik.projectTNP.dto.news.SummaryNewsDto;
 import com.hongik.projectTNP.service.BookmarkService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

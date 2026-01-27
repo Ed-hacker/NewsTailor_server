@@ -1,15 +1,15 @@
-package com.hongik.projectTNP.news.service;
+package com.hongik.projectTNP.service;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hongik.projectTNP.news.crawler.NaverSectionCrawler;
-import com.hongik.projectTNP.news.crawler.NewsSection;
-import com.hongik.projectTNP.news.domain.SummaryNewsCache;
-import com.hongik.projectTNP.news.domain.SummaryNewsCacheRepository;
-import com.hongik.projectTNP.news.dto.RawArticle;
-import com.hongik.projectTNP.news.dto.SummaryNewsDto;
+import com.hongik.projectTNP.crawler.NaverSectionCrawler;
+import com.hongik.projectTNP.crawler.NewsSection;
+import com.hongik.projectTNP.domain.SummaryNewsCache;
+import com.hongik.projectTNP.repository.SummaryNewsCacheRepository;
+import com.hongik.projectTNP.dto.news.RawArticle;
+import com.hongik.projectTNP.dto.news.SummaryNewsDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

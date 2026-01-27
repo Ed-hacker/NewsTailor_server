@@ -1,6 +1,6 @@
-package com.hongik.projectTNP.news.dto;
+package com.hongik.projectTNP.dto.news;
 
-import com.hongik.projectTNP.news.domain.NewsRanking;
+import com.hongik.projectTNP.domain.NewsRanking;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

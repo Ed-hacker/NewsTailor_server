@@ -1,4 +1,4 @@
-package com.hongik.projectTNP.news.domain;
+package com.hongik.projectTNP.domain;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

@@ -1,6 +1,6 @@
-package com.hongik.projectTNP.news.crawler;
+package com.hongik.projectTNP.crawler;
 
-import com.hongik.projectTNP.news.dto.RawArticle;
+import com.hongik.projectTNP.dto.news.RawArticle;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;

@@ -1,4 +1,4 @@
-package com.hongik.projectTNP.news.crawler;
+package com.hongik.projectTNP.crawler;
 
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;

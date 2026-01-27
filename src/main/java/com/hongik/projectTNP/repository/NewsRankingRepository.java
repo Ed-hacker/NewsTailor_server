@@ -1,4 +1,6 @@
-package com.hongik.projectTNP.news.domain;
+package com.hongik.projectTNP.repository;
+
+import com.hongik.projectTNP.domain.NewsRanking;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

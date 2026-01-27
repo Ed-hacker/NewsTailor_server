@@ -1,7 +1,7 @@
-package com.hongik.projectTNP.news.controller;
+package com.hongik.projectTNP.controller;
 
-import com.hongik.projectTNP.news.dto.NewsRankingResponse;
-import com.hongik.projectTNP.news.service.NewsRankingService;
+import com.hongik.projectTNP.dto.news.NewsRankingResponse;
+import com.hongik.projectTNP.service.NewsRankingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;

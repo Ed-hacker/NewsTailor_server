@@ -1,6 +1,6 @@
 package com.hongik.projectTNP.service;
 
-import com.hongik.projectTNP.news.dto.SummaryNewsDto;
+import com.hongik.projectTNP.dto.news.SummaryNewsDto;
 
 import java.util.List;
 

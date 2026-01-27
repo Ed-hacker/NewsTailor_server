@@ -1,7 +1,7 @@
-package com.hongik.projectTNP.news.scheduler;
+package com.hongik.projectTNP.scheduler;
 
-import com.hongik.projectTNP.news.service.NewsRankingService;
-import com.hongik.projectTNP.news.service.NewsSelectionService;
+import com.hongik.projectTNP.service.NewsRankingService;
+import com.hongik.projectTNP.service.NewsSelectionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;

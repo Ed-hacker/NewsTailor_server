@@ -1,4 +1,4 @@
-package com.hongik.projectTNP.news.dto;
+package com.hongik.projectTNP.dto.news;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

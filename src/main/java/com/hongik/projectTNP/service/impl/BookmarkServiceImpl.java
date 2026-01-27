@@ -2,9 +2,9 @@ package com.hongik.projectTNP.service.impl;
 
 import com.hongik.projectTNP.domain.Bookmark;
 import com.hongik.projectTNP.domain.User;
-import com.hongik.projectTNP.news.domain.SummaryNewsCache;
-import com.hongik.projectTNP.news.domain.SummaryNewsCacheRepository;
-import com.hongik.projectTNP.news.dto.SummaryNewsDto;
+import com.hongik.projectTNP.domain.SummaryNewsCache;
+import com.hongik.projectTNP.repository.SummaryNewsCacheRepository;
+import com.hongik.projectTNP.dto.news.SummaryNewsDto;
 import com.hongik.projectTNP.repository.BookmarkRepository;
 import com.hongik.projectTNP.repository.UserRepository;
 import com.hongik.projectTNP.service.BookmarkService;

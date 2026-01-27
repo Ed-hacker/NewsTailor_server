@@ -1,13 +1,12 @@
-package com.hongik.projectTNP.news.service;
+package com.hongik.projectTNP.service;
 
-import com.hongik.projectTNP.news.crawler.ArticleContentCrawler;
-import com.hongik.projectTNP.news.crawler.NaverRankingCrawler;
-import com.hongik.projectTNP.news.crawler.NewsSection;
-import com.hongik.projectTNP.news.domain.NewsRanking;
-import com.hongik.projectTNP.news.domain.NewsRankingRepository;
-import com.hongik.projectTNP.news.dto.NewsRankingResponse;
-import com.hongik.projectTNP.news.dto.RawArticle;
-import com.hongik.projectTNP.service.SummaryService;
+import com.hongik.projectTNP.crawler.ArticleContentCrawler;
+import com.hongik.projectTNP.crawler.NaverRankingCrawler;
+import com.hongik.projectTNP.crawler.NewsSection;
+import com.hongik.projectTNP.domain.NewsRanking;
+import com.hongik.projectTNP.repository.NewsRankingRepository;
+import com.hongik.projectTNP.dto.news.NewsRankingResponse;
+import com.hongik.projectTNP.dto.news.RawArticle;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
