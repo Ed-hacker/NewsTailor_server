@@ -1,6 +1,5 @@
 package com.hongik.projectTNP.news.controller;
 
-import com.hongik.projectTNP.news.dto.ArticleContentResponse;
 import com.hongik.projectTNP.news.dto.NewsRankingResponse;
 import com.hongik.projectTNP.news.service.NewsRankingService;
 import lombok.RequiredArgsConstructor;
