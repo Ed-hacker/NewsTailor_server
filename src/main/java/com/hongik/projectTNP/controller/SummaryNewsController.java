@@ -4,10 +4,10 @@ import com.hongik.projectTNP.domain.User;
 import com.hongik.projectTNP.domain.UserInterest;
 import com.hongik.projectTNP.exception.CustomException;
 import com.hongik.projectTNP.domain.SummaryNewsCache;
-import com.hongik.projectTNP.repository.SummaryNewsCacheRepository;
 import com.hongik.projectTNP.dto.news.SummaryNewsDto;
 import com.hongik.projectTNP.repository.UserInterestRepository;
 import com.hongik.projectTNP.repository.UserRepository;
+import com.hongik.projectTNP.service.SummaryNewsReadService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -16,7 +16,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,7 +26,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SummaryNewsController {
 
-    private final SummaryNewsCacheRepository summaryNewsCacheRepository;
+    private final SummaryNewsReadService summaryNewsReadService;
     private final UserRepository userRepository;
     private final UserInterestRepository userInterestRepository;
 
@@ -58,16 +57,13 @@ public class SummaryNewsController {
             }
 
             // 3. 각 관심사별로 캐시된 요약 뉴스 4개씩 가져오기 (총 12개)
-            // 최근 12시간 이내 생성된 캐시만 조회 (하루 3번 생성이므로 충분)
-            LocalDateTime since = LocalDateTime.now().minusHours(12);
             List<List<SummaryNewsDto>> categoryNews = new ArrayList<>();
 
             for (UserInterest userInterest : userInterests) {
                 Integer sectionId = userInterest.getInterest().getId().intValue();
 
-                // DB 캐시에서 조회
-                List<SummaryNewsCache> cachedNews = summaryNewsCacheRepository
-                        .findBySectionIdAndGeneratedAtAfter(sectionId, since);
+                // 로컬 캐시(Caffeine) → DB 순서로 조회
+                List<SummaryNewsCache> cachedNews = summaryNewsReadService.findBySectionId(sectionId);
 
                 if (cachedNews.isEmpty()) {
                     log.warn("섹션 {}에 대한 캐시된 요약 뉴스가 없습니다.", sectionId);

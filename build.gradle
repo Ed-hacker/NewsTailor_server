@@ -42,6 +42,10 @@ dependencies {
 	// Apache Commons
 	implementation 'org.apache.commons:commons-lang3:3.14.0'
 
+	// Cache (Caffeine)
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
+	implementation 'com.github.ben-manes.caffeine:caffeine'
+
 	// 형태소 분석기 (Komoran)
 	implementation 'com.github.shin285:KOMORAN:3.3.9'
 
